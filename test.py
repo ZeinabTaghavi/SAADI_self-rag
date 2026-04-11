@@ -24,7 +24,6 @@ from pathlib import Path
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from transformers import AutoTokenizer
-from vllm import LLM, SamplingParams
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 RETRIEVAL_LM_DIR = PROJECT_ROOT / "retrieval_lm"
@@ -32,6 +31,9 @@ if str(RETRIEVAL_LM_DIR) not in sys.path:
     sys.path.insert(0, str(RETRIEVAL_LM_DIR))
 
 from utils import PROMPT_DICT, control_tokens, load_special_tokens, postprocess  # noqa: E402
+
+LLM = None
+SamplingParams = None
 
 
 DEFAULT_DOCUMENT = """Llamas and alpacas are both domesticated South American camelids.
@@ -100,6 +102,23 @@ def parse_args() -> argparse.Namespace:
         "--dtype",
         default="half",
         help="Model dtype passed to vLLM.",
+    )
+    parser.add_argument(
+        "--cuda-visible-devices",
+        default=None,
+        help="Comma-separated GPU ids to expose to vLLM, for example '4,5,6,7'.",
+    )
+    parser.add_argument(
+        "--tensor-parallel-size",
+        type=int,
+        default=None,
+        help="Number of visible GPUs to shard the model across. Defaults to the number of ids in --cuda-visible-devices.",
+    )
+    parser.add_argument(
+        "--gpu-memory-utilization",
+        type=float,
+        default=0.75,
+        help="Fraction of GPU memory vLLM is allowed to reserve.",
     )
     parser.add_argument(
         "--top-k",
@@ -204,7 +223,7 @@ def get_token_prob(logprob_dict: Dict[int, float], token_id: int) -> float:
 
 
 def decide_retrieval(
-    model: LLM,
+    model,
     prompt: str,
     ret_tokens: Dict[str, int],
     threshold: float,
@@ -235,7 +254,7 @@ def find_first_token_position(token_ids: Sequence[int], candidate_ids: Sequence[
 
 
 def score_candidate(
-    model: LLM,
+    model,
     prompt: str,
     evidence: Dict[str, str],
     max_new_tokens: int,
@@ -327,7 +346,23 @@ def build_evidences(chunks: Sequence[str]) -> List[Dict[str, str]]:
     ]
 
 
+def configure_gpu_environment(args: argparse.Namespace) -> int:
+    if not args.cuda_visible_devices:
+        return args.tensor_parallel_size or 1
+
+    visible_devices = [device.strip() for device in args.cuda_visible_devices.split(",") if device.strip()]
+    if not visible_devices:
+        raise ValueError("--cuda-visible-devices was provided but no GPU ids were parsed.")
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(visible_devices)
+    if args.tensor_parallel_size is None:
+        return len(visible_devices)
+    return args.tensor_parallel_size
+
+
 def main() -> None:
+    global LLM, SamplingParams
+
     args = parse_args()
     document = load_document_text(args)
     chunks = chunk_document(document, args.chunk_size, args.chunk_overlap)
@@ -337,12 +372,32 @@ def main() -> None:
     for evidence in evidences:
         print(f"{evidence['title']}: {evidence['text']}\n")
 
+    tensor_parallel_size = configure_gpu_environment(args)
+
+    from vllm import LLM as VLLMEngine, SamplingParams as VLLMSamplingParams
+
+    LLM = VLLMEngine
+    SamplingParams = VLLMSamplingParams
+
     tokenizer = AutoTokenizer.from_pretrained(args.model_name, padding_side="left")
-    model = LLM(
-        model=args.model_name,
-        download_dir=args.download_dir,
-        dtype=args.dtype,
-    )
+    try:
+        model = LLM(
+            model=args.model_name,
+            download_dir=args.download_dir,
+            dtype=args.dtype,
+            gpu_memory_utilization=args.gpu_memory_utilization,
+            tensor_parallel_size=tensor_parallel_size,
+        )
+    except ValueError as exc:
+        message = str(exc)
+        if "Free memory on device" in message and "gpu memory utilization" in message.lower():
+            raise RuntimeError(
+                "vLLM could not start because there is not enough free GPU memory. "
+                "Try a lower value such as '--gpu-memory-utilization 0.7' or 0.6, "
+                "or free some VRAM from other processes. "
+                "If you have multiple GPUs, pass '--cuda-visible-devices 4,5,6,7 --tensor-parallel-size 4'."
+            ) from exc
+        raise
 
     ret_tokens, rel_tokens, grd_tokens, ut_tokens = load_special_tokens(
         tokenizer,
