@@ -377,11 +377,11 @@ class ExperimentRunner:
         overwrite_jsonl(self.paths["documents_jsonl"], corpus_rows)
 
     def _build_retriever(self) -> Optional[Retriever]:
-        from passage_retrieval import Retriever
-
         retrieval_cfg = self.resolved_cfg["retrieval"]
         if retrieval_cfg["backend"] != "contriever":
             return None
+        from passage_retrieval import Retriever
+
         if not retrieval_cfg["passages"] or not retrieval_cfg["passages_embeddings"]:
             raise ValueError(
                 "Contriever retrieval was requested, but retrieval.passages and retrieval.passages_embeddings are not both set."
