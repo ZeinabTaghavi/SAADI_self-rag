@@ -1,10 +1,10 @@
-run_name: loogle_selfrag_reference
+run_name: narrativeqa_selfrag_reference
 
 dataset:
-  name: loogle
-  source_type: loogle
+  name: narrativeqa
+  source_type: narrativeqa
   split: test
-  config_name: shortdep_qa
+  config_name: default
   qa_n: all
   qa_selection_method: first
   max_docs: 25
@@ -18,7 +18,7 @@ model:
   max_context_tokens: 4096
 
 generation:
-  max_new_tokens: 256
+  max_new_tokens: 320
   temperature: 0.0
   top_p: 1.0
 
@@ -34,13 +34,12 @@ selfrag:
   w_sup: 1.0
   w_use: 0.5
   scoring_strategy: marker
-  passage_chunk_tokens: 1200
-  passage_chunk_overlap_tokens: 200
+  passage_chunk_tokens: 1400
+  passage_chunk_overlap_tokens: 250
 
 retrieval:
   backend: provided_contexts
   retrieve_k: 5
-
 
 profiling:
   enabled: true

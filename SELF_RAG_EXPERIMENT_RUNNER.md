@@ -94,6 +94,11 @@ Supported retrieval backends:
 - `provided_contexts`: use contexts already stored on each QA entry, such as `ctxs`, `top_contexts`, `docs`, or the configured `dataset.contexts_field`
 - `contriever`: use the in-repo Contriever retriever from `retrieval_lm/passage_retrieval.py`
 
+Examples of supported SELF-RAG long-document controls:
+
+- `selfrag.passage_chunk_tokens`
+- `selfrag.passage_chunk_overlap_tokens`
+
 ## LooGLE
 
 This repo now includes a native `loogle` dataset loader for the standalone runner, based on the same loading shape as your external loader but implemented locally inside SELF-RAG.
@@ -132,6 +137,45 @@ Fields intentionally omitted because they do not directly drive this SELF-RAG ru
 - `model.backend`
 - `model.alias`
 - chat-specific stop strings and unrelated sampling fields
+
+## NarrativeQA
+
+This repo now also includes a native `narrativeqa` dataset loader for the standalone runner.
+
+Reference config:
+
+`[configs/selfrag/narrativeqa_selfrag.yaml](/Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/narrativeqa_selfrag.yaml)`
+
+Run it like this:
+
+```bash
+python3 run_selfrag_experiment.py \
+  --dataset-name narrativeqa \
+  --default-yaml /Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/narrativeqa_selfrag.yaml
+```
+
+Because NarrativeQA documents are much longer, the runner now supports passage chunking before SELF-RAG generation. For the provided NarrativeQA config, that means:
+
+- the source document remains the selected corpus document in the artifacts
+- the raw full-pipeline trace still records which inserted chunk was actually used
+- long documents are broken into chunk candidates with overlap before the model scores them
+
+Fields intentionally carried over from your external `nqa_retrieval_ablation.yaml`:
+
+- `dataset.split`
+- `dataset.config_name`
+- `dataset.qa_n`
+- `dataset.qa_selection_method`
+- `sample.max_documents` mapped to `dataset.max_docs`
+- `retrieval.retrieve_k` mapped to `selfrag.ndocs`
+- `model.tensor_parallel_size`
+- `model.dtype`
+- `model.gpu_memory_utilization`
+
+For NarrativeQA, I also set:
+
+- a higher `generation.max_new_tokens`
+- explicit long-document chunking via `selfrag.passage_chunk_tokens` and `selfrag.passage_chunk_overlap_tokens`
 
 ## Important notes
 

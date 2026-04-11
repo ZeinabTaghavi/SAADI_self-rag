@@ -224,6 +224,49 @@ class SelfRAGGenerator:
             "kept_token_count": available_text_tokens,
         }
 
+    def _split_passage_into_candidates(self, passage: Dict[str, Any]) -> List[Dict[str, Any]]:
+        chunk_tokens = self.selfrag_cfg.get("passage_chunk_tokens")
+        if chunk_tokens is None:
+            return [passage]
+        chunk_tokens = int(chunk_tokens)
+        if chunk_tokens <= 0:
+            return [passage]
+
+        overlap_tokens = int(self.selfrag_cfg.get("passage_chunk_overlap_tokens", 0) or 0)
+        text = str(passage.get("text", "") or "")
+        text_token_ids = self.tokenizer.encode(text, add_special_tokens=False)
+        if len(text_token_ids) <= chunk_tokens:
+            return [passage]
+
+        step = max(1, chunk_tokens - overlap_tokens)
+        candidates: List[Dict[str, Any]] = []
+        base_title = str(passage.get("title", "") or "")
+        base_doc_id = str(passage.get("doc_id", "") or "")
+        for start in range(0, len(text_token_ids), step):
+            chunk_ids = text_token_ids[start:start + chunk_tokens]
+            if not chunk_ids:
+                continue
+            chunk_text = self.tokenizer.decode(chunk_ids, skip_special_tokens=False).strip()
+            if not chunk_text:
+                continue
+            chunk_index = len(candidates)
+            candidates.append(
+                {
+                    **passage,
+                    "doc_id": f"{base_doc_id}::chunk_{chunk_index}",
+                    "parent_doc_id": base_doc_id,
+                    "title": f"{base_title} [chunk {chunk_index}]" if base_title else f"chunk {chunk_index}",
+                    "text": chunk_text,
+                    "chunk_index": chunk_index,
+                    "chunk_start_token": start,
+                    "chunk_token_count": len(chunk_ids),
+                    "was_chunked_from_long_document": True,
+                }
+            )
+            if start + chunk_tokens >= len(text_token_ids):
+                break
+        return candidates or [passage]
+
     def build_prompt(self, question: str, task_name: Optional[str]) -> str:
         if task_name and task_name in self.TASK_INST:
             instruction = self.TASK_INST[task_name] + "## Input:\n\n" + question
@@ -289,7 +332,10 @@ class SelfRAGGenerator:
         generation_started = time.perf_counter()
         candidate_traces: List[Dict[str, Any]] = []
         if should_retrieve and passages:
-            fitted_passages = [self._fit_passage_to_context(prompt, passage) for passage in passages]
+            expanded_passages: List[Dict[str, Any]] = []
+            for passage in passages:
+                expanded_passages.extend(self._split_passage_into_candidates(passage))
+            fitted_passages = [self._fit_passage_to_context(prompt, passage) for passage in expanded_passages]
             augmented_prompts = [
                 f"{prompt}[Retrieval]<paragraph>{passage.get('title', '')}\n{passage['text']}</paragraph>"
                 for passage in fitted_passages

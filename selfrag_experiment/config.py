@@ -170,6 +170,8 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
         "w_sup": first_value(config, ["selfrag.w_sup"], default=1.0),
         "w_use": first_value(config, ["selfrag.w_use"], default=0.5),
         "scoring_strategy": first_value(config, ["selfrag.scoring_strategy"], default="marker"),
+        "passage_chunk_tokens": first_value(config, ["selfrag.passage_chunk_tokens"], default=None),
+        "passage_chunk_overlap_tokens": first_value(config, ["selfrag.passage_chunk_overlap_tokens"], default=0),
     }
 
     retrieval = {
@@ -229,7 +231,7 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
             "No explicit contexts_field was provided; the runner will auto-detect from ctxs/top_contexts/docs when present."
         )
 
-    native_source_types = {"loogle"}
+    native_source_types = {"loogle", "narrativeqa"}
     if dataset_loader["source"] is None and dataset_loader["qa_path"] is None and str(dataset_loader["source_type"]).lower() not in native_source_types:
         notes.append("No dataset source path was found in the YAML; the CLI must provide a dataset source override or the YAML must be updated.")
 
