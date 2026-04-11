@@ -21,7 +21,7 @@ import os
 import re
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Tuple, Union
 
 from transformers import AutoTokenizer
 
@@ -210,39 +210,51 @@ def strip_control_tokens(text: str) -> str:
     return text.replace("</s>", "").strip()
 
 
-def safe_exp(logprob: float) -> float:
-    if logprob <= -100:
+def parse_utility_score(text: str) -> float:
+    match = re.search(r"\[Utility:(\d)\]", text)
+    if not match:
         return 0.0
-    return math.exp(logprob)
+    utility_level = int(match.group(1))
+    utility_weights = {
+        1: -1.0,
+        2: -0.5,
+        3: 0.0,
+        4: 0.5,
+        5: 1.0,
+    }
+    return utility_weights.get(utility_level, 0.0)
 
 
-def get_token_prob(logprob_dict: Dict[int, float], token_id: int) -> float:
-    if token_id not in logprob_dict:
-        return 0.0
-    return safe_exp(float(logprob_dict[token_id]))
+def marker_score(text: str, positive_marker: str, partial_marker: Optional[str] = None) -> float:
+    if positive_marker in text:
+        return 1.0
+    if partial_marker and partial_marker in text:
+        return 0.5
+    return 0.0
 
 
 def decide_retrieval(
     model,
     prompt: str,
-    ret_tokens: Dict[str, int],
     threshold: float,
-) -> Tuple[bool, str, float]:
+) -> Tuple[bool, str, Union[float, str]]:
     sampling_params = SamplingParams(
         temperature=0.0,
         top_p=1.0,
         max_tokens=25,
-        logprobs=32016,
         skip_special_tokens=False,
     )
     pred = model.generate([prompt], sampling_params)[0]
     output = pred.outputs[0]
-    first_step = output.logprobs[0]
-    retrieval_prob = get_token_prob(first_step, ret_tokens["[Retrieval]"])
-    no_retrieval_prob = get_token_prob(first_step, ret_tokens["[No Retrieval]"])
-    denom = retrieval_prob + no_retrieval_prob
-    ratio = retrieval_prob / denom if denom else 0.0
-    return ratio >= threshold, output.text, ratio
+    raw_text = output.text
+    if "[Retrieval]" in raw_text and "[No Retrieval]" not in raw_text:
+        return True, raw_text, "text-marker:[Retrieval]"
+    if "[No Retrieval]" in raw_text and "[Retrieval]" not in raw_text:
+        return False, raw_text, "text-marker:[No Retrieval]"
+
+    # Fallback for generations where the model emits other content before the marker.
+    should_retrieve = "[Retrieval]" in raw_text
+    return should_retrieve, raw_text, "text-marker:mixed"
 
 
 def find_first_token_position(token_ids: Sequence[int], candidate_ids: Sequence[int]) -> Optional[int]:
@@ -258,9 +270,6 @@ def score_candidate(
     prompt: str,
     evidence: Dict[str, str],
     max_new_tokens: int,
-    rel_tokens: Dict[str, int],
-    grd_tokens: Dict[str, int],
-    ut_tokens: Dict[str, int],
 ) -> Dict[str, object]:
     evidence_prompt = (
         f"{prompt}[Retrieval]<paragraph>{evidence['title']}\n{evidence['text']}</paragraph>"
@@ -269,68 +278,22 @@ def score_candidate(
         temperature=0.0,
         top_p=1.0,
         max_tokens=max_new_tokens,
-        logprobs=5000,
         skip_special_tokens=False,
     )
     pred = model.generate([evidence_prompt], sampling_params)[0]
     output = pred.outputs[0]
-    token_ids = output.token_ids
-    token_logprobs = output.logprobs
+    raw_text = output.text
 
-    relevance_raw = {
-        token: get_token_prob(token_logprobs[0], token_id)
-        for token, token_id in rel_tokens.items()
-    }
-    relevance_sum = sum(relevance_raw.values())
-    relevance_score = (
-        relevance_raw.get("[Relevant]", 0.0) / relevance_sum if relevance_sum else 0.0
-    )
-
-    support_index = find_first_token_position(token_ids, grd_tokens.values())
-    support_raw = {}
-    if support_index is not None:
-        support_raw = {
-            token: get_token_prob(token_logprobs[support_index], token_id)
-            for token, token_id in grd_tokens.items()
-        }
-    support_sum = sum(support_raw.values())
-    if support_sum:
-        ground_score = (
-            support_raw.get("[Fully supported]", 0.0) / support_sum
-            + 0.5 * support_raw.get("[Partially supported]", 0.0) / support_sum
-        )
-    else:
-        ground_score = 0.0
-
-    utility_index = find_first_token_position(token_ids, ut_tokens.values())
-    utility_raw = {}
-    if utility_index is not None:
-        utility_raw = {
-            token: get_token_prob(token_logprobs[utility_index], token_id)
-            for token, token_id in ut_tokens.items()
-        }
-    utility_sum = sum(utility_raw.values())
-    if utility_sum:
-        utility_weights = {
-            "[Utility:1]": -1.0,
-            "[Utility:2]": -0.5,
-            "[Utility:3]": 0.0,
-            "[Utility:4]": 0.5,
-            "[Utility:5]": 1.0,
-        }
-        utility_score = sum(
-            utility_weights[token] * (value / utility_sum)
-            for token, value in utility_raw.items()
-        )
-    else:
-        utility_score = 0.0
+    relevance_score = marker_score(raw_text, "[Relevant]")
+    ground_score = marker_score(raw_text, "[Fully supported]", "[Partially supported]")
+    utility_score = parse_utility_score(raw_text)
 
     final_score = relevance_score + ground_score + 0.5 * utility_score
-    clean_answer = postprocess(output.text)
+    clean_answer = postprocess(raw_text)
 
     return {
         "answer": clean_answer,
-        "raw_answer": output.text,
+        "raw_answer": raw_text,
         "evidence": evidence,
         "score": final_score,
         "relevance_score": relevance_score,
@@ -450,12 +413,11 @@ def main() -> None:
     should_retrieve, draft_output, retrieval_ratio = decide_retrieval(
         model=model,
         prompt=prompt,
-        ret_tokens=ret_tokens,
         threshold=args.threshold,
     )
 
     print(f"Query: {args.query}")
-    print(f"Retrieval probability: {retrieval_ratio:.4f}")
+    print(f"Retrieval decision signal: {retrieval_ratio}")
     print(f"Initial draft: {strip_control_tokens(draft_output)}\n")
 
     if not should_retrieve:
@@ -477,9 +439,6 @@ def main() -> None:
             prompt=prompt,
             evidence=evidence,
             max_new_tokens=args.max_new_tokens,
-            rel_tokens=rel_tokens,
-            grd_tokens=grd_tokens,
-            ut_tokens=ut_tokens,
         )
         for evidence in evidences
     ]
