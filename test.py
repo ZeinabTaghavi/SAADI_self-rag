@@ -346,18 +346,42 @@ def build_evidences(chunks: Sequence[str]) -> List[Dict[str, str]]:
     ]
 
 
+def parse_visible_devices(raw_value: Optional[str]) -> List[str]:
+    if raw_value is None:
+        return []
+    return [device.strip() for device in raw_value.split(",") if device.strip()]
+
+
+def resolve_directory(path_value: Optional[str], default_name: str) -> str:
+    cleaned = (path_value or "").strip()
+    resolved = PROJECT_ROOT / default_name if not cleaned else Path(cleaned).expanduser()
+    resolved.mkdir(parents=True, exist_ok=True)
+    return str(resolved.resolve())
+
+
 def configure_gpu_environment(args: argparse.Namespace) -> int:
-    if not args.cuda_visible_devices:
-        return args.tensor_parallel_size or 1
+    cli_visible_devices = parse_visible_devices(args.cuda_visible_devices)
+    env_visible_devices = parse_visible_devices(os.environ.get("CUDA_VISIBLE_DEVICES"))
 
-    visible_devices = [device.strip() for device in args.cuda_visible_devices.split(",") if device.strip()]
-    if not visible_devices:
-        raise ValueError("--cuda-visible-devices was provided but no GPU ids were parsed.")
+    if cli_visible_devices:
+        visible_devices = cli_visible_devices
+        os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(visible_devices)
+    else:
+        visible_devices = env_visible_devices
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = ",".join(visible_devices)
     if args.tensor_parallel_size is None:
-        return len(visible_devices)
-    return args.tensor_parallel_size
+        tensor_parallel_size = len(visible_devices) if visible_devices else 1
+    else:
+        tensor_parallel_size = args.tensor_parallel_size
+
+    if visible_devices and tensor_parallel_size > len(visible_devices):
+        raise ValueError(
+            f"tensor_parallel_size={tensor_parallel_size} is larger than the number of visible GPUs "
+            f"({len(visible_devices)} from CUDA_VISIBLE_DEVICES={','.join(visible_devices)})."
+        )
+    if tensor_parallel_size < 1:
+        raise ValueError("--tensor-parallel-size must be at least 1.")
+    return tensor_parallel_size
 
 
 def main() -> None:
@@ -373,6 +397,17 @@ def main() -> None:
         print(f"{evidence['title']}: {evidence['text']}\n")
 
     tensor_parallel_size = configure_gpu_environment(args)
+    download_dir = resolve_directory(args.download_dir, ".cache")
+    hf_home = resolve_directory(os.environ.get("HF_HOME"), ".hf_home")
+    os.environ["HF_HOME"] = hf_home
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(Path(hf_home) / "hub"))
+    os.environ.setdefault("TRANSFORMERS_CACHE", str(Path(hf_home) / "transformers"))
+
+    visible_devices = os.environ.get("CUDA_VISIBLE_DEVICES", "<all visible>")
+    print(f"CUDA_VISIBLE_DEVICES={visible_devices}")
+    print(f"tensor_parallel_size={tensor_parallel_size}")
+    print(f"download_dir={download_dir}")
+    print(f"HF_HOME={hf_home}\n")
 
     from vllm import LLM as VLLMEngine, SamplingParams as VLLMSamplingParams
 
@@ -383,7 +418,7 @@ def main() -> None:
     try:
         model = LLM(
             model=args.model_name,
-            download_dir=args.download_dir,
+            download_dir=download_dir,
             dtype=args.dtype,
             gpu_memory_utilization=args.gpu_memory_utilization,
             tensor_parallel_size=tensor_parallel_size,
@@ -398,6 +433,12 @@ def main() -> None:
                 "If you have multiple GPUs, pass '--cuda-visible-devices 4,5,6,7 --tensor-parallel-size 4'."
             ) from exc
         raise
+    except FileNotFoundError as exc:
+        raise RuntimeError(
+            "vLLM failed during startup because one of its cache or download paths resolved to an empty or missing directory. "
+            "The script now creates local cache directories automatically, but if you still see this, run through the provided shell launcher "
+            "so CUDA_VISIBLE_DEVICES and cache paths are exported before Python starts."
+        ) from exc
 
     ret_tokens, rel_tokens, grd_tokens, ut_tokens = load_special_tokens(
         tokenizer,
