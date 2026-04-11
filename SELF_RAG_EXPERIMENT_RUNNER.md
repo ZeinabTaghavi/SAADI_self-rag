@@ -177,6 +177,40 @@ For NarrativeQA, I also set:
 - a higher `generation.max_new_tokens`
 - explicit long-document chunking via `selfrag.passage_chunk_tokens` and `selfrag.passage_chunk_overlap_tokens`
 
+## QASPER
+
+This repo now also includes a native `qasper` dataset loader for the standalone runner.
+
+Reference config:
+
+`[configs/selfrag/qasper_selfrag.yaml](/Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/qasper_selfrag.yaml)`
+
+Run it like this:
+
+```bash
+python3 run_selfrag_experiment.py \
+  --dataset-name qasper \
+  --default-yaml /Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/qasper_selfrag.yaml
+```
+
+Fields intentionally carried over from your external `qasper_retrieval_ablation.yaml`:
+
+- `dataset.split`
+- `dataset.config_name`
+- `dataset.qa_n`
+- `dataset.qa_selection_method`
+- `sample.max_documents` mapped to `dataset.max_docs`
+- `retrieval.retrieve_k` mapped to `selfrag.ndocs`
+- `model.tensor_parallel_size`
+- `model.dtype`
+- `model.gpu_memory_utilization`
+
+Like NarrativeQA, QASPER can have long paper contexts, so the default SELF-RAG config also uses:
+
+- `generation.max_new_tokens: 320`
+- `selfrag.passage_chunk_tokens: 1400`
+- `selfrag.passage_chunk_overlap_tokens: 250`
+
 ## Important notes
 
 - No separate retrieval evaluation artifacts are written.

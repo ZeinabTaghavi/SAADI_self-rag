@@ -231,7 +231,7 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
             "No explicit contexts_field was provided; the runner will auto-detect from ctxs/top_contexts/docs when present."
         )
 
-    native_source_types = {"loogle", "narrativeqa"}
+    native_source_types = {"loogle", "narrativeqa", "qasper"}
     if dataset_loader["source"] is None and dataset_loader["qa_path"] is None and str(dataset_loader["source_type"]).lower() not in native_source_types:
         notes.append("No dataset source path was found in the YAML; the CLI must provide a dataset source override or the YAML must be updated.")
 

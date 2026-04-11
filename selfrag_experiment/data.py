@@ -6,6 +6,7 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from selfrag_experiment.loaders.loogle import load_loogle_records
 from selfrag_experiment.loaders.narrativeqa import load_narrativeqa_records
+from selfrag_experiment.loaders.qasper import load_qasper_records
 
 
 def _load_json_or_jsonl(path: str) -> List[Dict[str, Any]]:
@@ -138,6 +139,24 @@ def load_and_normalize_dataset(resolved_cfg: Dict[str, Any]) -> Tuple[List[Dict[
             max_documents=loader_cfg.get("max_docs"),
         )
         notes.extend(nqa_notes)
+        max_questions = loader_cfg.get("max_questions")
+        if isinstance(max_questions, int) and max_questions > 0:
+            qa_entries = qa_entries[:max_questions]
+        if loader_cfg["question_ids"]:
+            allowed_ids = {str(item) for item in loader_cfg["question_ids"]}
+            qa_entries = [item for item in qa_entries if item["query_id"] in allowed_ids]
+            notes.append(f"Filtered QA entries to the explicitly requested question_ids set ({len(allowed_ids)} ids).")
+        return qa_entries, documents, notes
+
+    if str(loader_cfg.get("source_type", "")).lower() == "qasper":
+        qa_entries, documents, qasper_notes = load_qasper_records(
+            split=str(loader_cfg.get("split") or "test"),
+            config_name=loader_cfg.get("config_name"),
+            qa_n=loader_cfg.get("qa_n", "all"),
+            qa_selection_method=str(loader_cfg.get("qa_selection_method") or "first"),
+            max_documents=loader_cfg.get("max_docs"),
+        )
+        notes.extend(qasper_notes)
         max_questions = loader_cfg.get("max_questions")
         if isinstance(max_questions, int) and max_questions > 0:
             qa_entries = qa_entries[:max_questions]
