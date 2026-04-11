@@ -1,0 +1,43 @@
+run_name: loogle_selfrag_reference
+
+dataset:
+  name: loogle
+  source_type: loogle
+  split: test
+  config_name: shortdep_qa
+  qa_n: all
+  qa_selection_method: first
+  max_docs: 25
+  task: qa
+
+model:
+  name: selfrag/selfrag_llama2_7b
+  tensor_parallel_size: 4
+  dtype: bfloat16
+  gpu_memory_utilization: 0.9
+
+generation:
+  max_new_tokens: 256
+  temperature: 0.0
+  top_p: 1.0
+
+selfrag:
+  pipeline_type: short_form
+  mode: adaptive_retrieval
+  ndocs: 5
+  threshold: 0.2
+  use_grounding: true
+  use_utility: true
+  use_seqscore: true
+  w_rel: 1.0
+  w_sup: 1.0
+  w_use: 0.5
+  scoring_strategy: marker
+
+retrieval:
+  backend: provided_contexts
+  retrieve_k: 5
+
+profiling:
+  enabled: true
+  capture_resource_usage: true
