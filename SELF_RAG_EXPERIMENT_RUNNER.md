@@ -78,6 +78,7 @@ Examples of supported model / runtime fields:
 - `model.dtype`
 - `model.tensor_parallel_size`
 - `model.gpu_memory_utilization`
+- `model.max_context_tokens`
 - `model.cuda_visible_devices`
 
 Examples of supported retrieval fields:

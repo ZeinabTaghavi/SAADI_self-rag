@@ -170,6 +170,60 @@ class SelfRAGGenerator:
             return 0
         return len(self.tokenizer.encode(text, add_special_tokens=False))
 
+    def _decode_trimmed_tokens(self, token_ids: List[int], token_budget: int) -> str:
+        if token_budget <= 0:
+            return ""
+        trimmed = token_ids[:token_budget]
+        if not trimmed:
+            return ""
+        return self.tokenizer.decode(trimmed, skip_special_tokens=False).strip()
+
+    def _fit_passage_to_context(
+        self,
+        prompt: str,
+        passage: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        max_context_tokens = int(self.model_cfg.get("max_context_tokens", 4096))
+        max_new_tokens = int(self.decoding_cfg["max_new_tokens"])
+        reserved_generation_tokens = max_new_tokens + 64
+
+        title = str(passage.get("title", "") or "")
+        text = str(passage.get("text", "") or "")
+        prefix = f"{prompt}[Retrieval]<paragraph>{title}\n"
+        suffix = "</paragraph>"
+
+        prefix_tokens = self.count_tokens(prefix)
+        suffix_tokens = self.count_tokens(suffix)
+        available_text_tokens = max_context_tokens - reserved_generation_tokens - prefix_tokens - suffix_tokens
+
+        if available_text_tokens <= 0:
+            return {
+                **passage,
+                "text": "",
+                "was_truncated_for_context": True,
+                "original_token_count": self.count_tokens(text),
+                "kept_token_count": 0,
+            }
+
+        text_token_ids = self.tokenizer.encode(text, add_special_tokens=False)
+        if len(text_token_ids) <= available_text_tokens:
+            return {
+                **passage,
+                "text": text,
+                "was_truncated_for_context": False,
+                "original_token_count": len(text_token_ids),
+                "kept_token_count": len(text_token_ids),
+            }
+
+        trimmed_text = self._decode_trimmed_tokens(text_token_ids, available_text_tokens)
+        return {
+            **passage,
+            "text": trimmed_text,
+            "was_truncated_for_context": True,
+            "original_token_count": len(text_token_ids),
+            "kept_token_count": available_text_tokens,
+        }
+
     def build_prompt(self, question: str, task_name: Optional[str]) -> str:
         if task_name and task_name in self.TASK_INST:
             instruction = self.TASK_INST[task_name] + "## Input:\n\n" + question
@@ -235,12 +289,13 @@ class SelfRAGGenerator:
         generation_started = time.perf_counter()
         candidate_traces: List[Dict[str, Any]] = []
         if should_retrieve and passages:
+            fitted_passages = [self._fit_passage_to_context(prompt, passage) for passage in passages]
             augmented_prompts = [
                 f"{prompt}[Retrieval]<paragraph>{passage.get('title', '')}\n{passage['text']}</paragraph>"
-                for passage in passages
+                for passage in fitted_passages
             ]
             outputs = self._generate(augmented_prompts)
-            for passage, prediction in zip(passages, outputs):
+            for passage, prediction in zip(fitted_passages, outputs):
                 raw_text = prediction.outputs[0].text
                 candidate_traces.append(
                     {

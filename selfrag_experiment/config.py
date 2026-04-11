@@ -136,6 +136,7 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
             ["model.gpu_memory_utilization", "runtime.gpu_memory_utilization"],
             default=0.85,
         ),
+        "max_context_tokens": first_value(config, ["model.max_context_tokens", "runtime.max_context_tokens"], default=4096),
         "cuda_visible_devices": _string_or_none(
             first_value(config, ["model.cuda_visible_devices", "runtime.cuda_visible_devices"])
         ),
