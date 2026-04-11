@@ -237,11 +237,29 @@ def _iter_title_variants(value: str | None) -> List[str]:
     if not raw:
         return []
     variants = [raw]
+    cleanup_suffixes = (
+        " complete",
+        " unabridged",
+        " illustrated",
+        " with illustrations",
+    )
     for sep in (":", ";", ",", " - ", " — ", " – "):
         if sep in raw:
             head = raw.split(sep, 1)[0].strip()
             if head:
                 variants.append(head)
+    for candidate in list(variants):
+        lowered = candidate.casefold()
+        for prefix in ("the ", "a ", "an "):
+            if lowered.startswith(prefix):
+                trimmed = candidate[len(prefix):].strip()
+                if trimmed:
+                    variants.append(trimmed)
+        for suffix in cleanup_suffixes:
+            if lowered.endswith(suffix):
+                trimmed = candidate[: -len(suffix)].strip(" ,;-:")
+                if trimmed:
+                    variants.append(trimmed)
     out: List[str] = []
     seen = set()
     for candidate in variants:
@@ -297,6 +315,27 @@ def _title_like_lines(text: str, limit: int = 5) -> List[str]:
         if normalized and key not in seen:
             seen.add(key)
             out.append(normalized)
+    stitched_parts: List[str] = []
+    total_words = 0
+    for candidate in raw_candidates[:3]:
+        lowered = candidate.casefold()
+        if stitched_parts and (
+            lowered.startswith("by ")
+            or lowered.startswith("translated by ")
+            or lowered.startswith("produced by ")
+        ):
+            break
+        if len(candidate) > 80:
+            break
+        stitched_parts.append(candidate.strip(" .,:;!-"))
+        total_words += len(candidate.split())
+        if len(stitched_parts) < 2 or total_words > 12:
+            continue
+        stitched = " ".join(part for part in stitched_parts if part).strip(" .,:;!-")
+        key = stitched.casefold()
+        if stitched and key not in seen:
+            seen.add(key)
+            out.append(stitched)
     return out
 
 
