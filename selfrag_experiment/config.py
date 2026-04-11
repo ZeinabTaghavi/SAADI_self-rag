@@ -93,6 +93,7 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
         "split": _string_or_none(first_value(config, ["dataset.split", "data.split"], default="train")),
         "subset": _string_or_none(first_value(config, ["dataset.subset", "data.subset"])),
         "config_name": _string_or_none(first_value(config, ["dataset.config_name", "data.config_name"])),
+        "books_root": _string_or_none(first_value(config, ["dataset.books_root", "data.books_root"])),
         "data_files": first_value(config, ["dataset.data_files", "data.data_files"]),
         "qa_path": _string_or_none(first_value(config, ["dataset.qa_path", "data.qa_path", "qa.path"])),
         "docs_path": _string_or_none(first_value(config, ["dataset.docs_path", "data.docs_path", "corpus.path"])),
@@ -231,7 +232,7 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
             "No explicit contexts_field was provided; the runner will auto-detect from ctxs/top_contexts/docs when present."
         )
 
-    native_source_types = {"loogle", "narrativeqa", "qasper"}
+    native_source_types = {"loogle", "narrativeqa", "qasper", "quality", "novelhopqa"}
     if dataset_loader["source"] is None and dataset_loader["qa_path"] is None and str(dataset_loader["source_type"]).lower() not in native_source_types:
         notes.append("No dataset source path was found in the YAML; the CLI must provide a dataset source override or the YAML must be updated.")
 

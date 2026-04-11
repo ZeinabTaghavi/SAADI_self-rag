@@ -7,11 +7,15 @@ cd "$SCRIPT_DIR"
 # Default usage:
 #   GPU_IDS=4,5,6,7 ./run_selfrag_multi_gpu.sh
 #
-# LooGLE one-document smoke test:
-#   GPU_IDS=4,5,6,7 MAX_DOCS=1 QA_N=3 ./run_selfrag_multi_gpu.sh
+# Run all default datasets explicitly:
+#   GPU_IDS=4,5,6,7 DATASET_SEQUENCE=loogle,narrativeqa,qasper,quality,novelhopqa ./run_selfrag_multi_gpu.sh
+#
+# Single-dataset smoke test:
+#   GPU_IDS=4,5,6,7 DATASET_NAME=loogle MAX_DOCS=1 QA_N=3 ./run_selfrag_multi_gpu.sh
 
-DATASET_NAME="${DATASET_NAME:-loogle}"
-DEFAULT_YAML="${DEFAULT_YAML:-$SCRIPT_DIR/configs/selfrag/loogle_selfrag.yaml}"
+DATASET_NAME="${DATASET_NAME:-}"
+DATASET_SEQUENCE="${DATASET_SEQUENCE:-loogle,narrativeqa,qasper,quality,novelhopqa}"
+DEFAULT_YAML="${DEFAULT_YAML:-}"
 RUNNER="${RUNNER:-$SCRIPT_DIR/run_selfrag_experiment.py}"
 
 GPU_IDS="${GPU_IDS:-4,5,6,7}"
@@ -37,11 +41,6 @@ if [[ -z "${GPU_IDS// }" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$DEFAULT_YAML" ]]; then
-  echo "DEFAULT_YAML does not exist: $DEFAULT_YAML" >&2
-  exit 1
-fi
-
 if [[ ! -f "$RUNNER" ]]; then
   echo "RUNNER does not exist: $RUNNER" >&2
   exit 1
@@ -62,25 +61,53 @@ export HUGGINGFACE_HUB_CACHE="$HF_HOME/hub"
 export TRANSFORMERS_CACHE="$HF_HOME/transformers"
 export TOKENIZERS_PARALLELISM=false
 
-TMP_YAML="$SCRIPT_DIR/.tmp/${DATASET_NAME}_selfrag_runtime.yaml"
+default_yaml_for_dataset() {
+  local dataset_name="$1"
+  case "$dataset_name" in
+    loogle)
+      echo "$SCRIPT_DIR/configs/selfrag/loogle_selfrag.yaml"
+      ;;
+    narrativeqa)
+      echo "$SCRIPT_DIR/configs/selfrag/narrativeqa_selfrag.yaml"
+      ;;
+    qasper)
+      echo "$SCRIPT_DIR/configs/selfrag/qasper_selfrag.yaml"
+      ;;
+    quality)
+      echo "$SCRIPT_DIR/configs/selfrag/quality_selfrag.yaml"
+      ;;
+    novelhopqa)
+      echo "$SCRIPT_DIR/configs/selfrag/novelhopqa_selfrag.yaml"
+      ;;
+    *)
+      echo ""
+      ;;
+  esac
+}
 
-DEFAULT_YAML="$DEFAULT_YAML" \
-TMP_YAML="$TMP_YAML" \
-RUN_NAME="$RUN_NAME" \
-MODEL_NAME="$MODEL_NAME" \
-DTYPE="$DTYPE" \
-TP_SIZE="$TP_SIZE" \
-GPU_MEMORY_UTILIZATION="$GPU_MEMORY_UTILIZATION" \
-GPU_IDS="$GPU_IDS" \
-DOWNLOAD_DIR="$DOWNLOAD_DIR" \
-MAX_DOCS="$MAX_DOCS" \
-QA_N="$QA_N" \
-QA_SELECTION_METHOD="$QA_SELECTION_METHOD" \
-MAX_NEW_TOKENS="$MAX_NEW_TOKENS" \
-NDOCS="$NDOCS" \
-THRESHOLD="$THRESHOLD" \
-MODE="$MODE" \
-python3 - <<'PY'
+write_runtime_yaml() {
+  local dataset_name="$1"
+  local source_yaml="$2"
+  local target_yaml="$3"
+  local run_name_value="$4"
+
+  DEFAULT_YAML="$source_yaml" \
+  TMP_YAML="$target_yaml" \
+  RUN_NAME="$run_name_value" \
+  MODEL_NAME="$MODEL_NAME" \
+  DTYPE="$DTYPE" \
+  TP_SIZE="$TP_SIZE" \
+  GPU_MEMORY_UTILIZATION="$GPU_MEMORY_UTILIZATION" \
+  GPU_IDS="$GPU_IDS" \
+  DOWNLOAD_DIR="$DOWNLOAD_DIR" \
+  MAX_DOCS="$MAX_DOCS" \
+  QA_N="$QA_N" \
+  QA_SELECTION_METHOD="$QA_SELECTION_METHOD" \
+  MAX_NEW_TOKENS="$MAX_NEW_TOKENS" \
+  NDOCS="$NDOCS" \
+  THRESHOLD="$THRESHOLD" \
+  MODE="$MODE" \
+  python3 - <<'PY'
 import os
 from pathlib import Path
 import yaml
@@ -129,24 +156,70 @@ tmp_yaml.parent.mkdir(parents=True, exist_ok=True)
 with open(tmp_yaml, "w", encoding="utf-8") as handle:
     yaml.safe_dump(cfg, handle, sort_keys=False, allow_unicode=False)
 PY
+}
 
-CMD=(
-  python3 "$RUNNER"
-  --dataset-name "$DATASET_NAME"
-  --default-yaml "$TMP_YAML"
-)
+run_one_dataset() {
+  local dataset_name="$1"
+  local source_yaml="$2"
+  local effective_run_name="$3"
+  local tmp_yaml="$SCRIPT_DIR/.tmp/${dataset_name}_selfrag_runtime.yaml"
 
-if [[ "$RESUME" == "1" ]]; then
-  CMD+=(--resume)
+  if [[ ! -f "$source_yaml" ]]; then
+    echo "DEFAULT_YAML does not exist for dataset '$dataset_name': $source_yaml" >&2
+    exit 1
+  fi
+
+  write_runtime_yaml "$dataset_name" "$source_yaml" "$tmp_yaml" "$effective_run_name"
+
+  CMD=(
+    python3 "$RUNNER"
+    --dataset-name "$dataset_name"
+    --default-yaml "$tmp_yaml"
+  )
+
+  if [[ "$RESUME" == "1" ]]; then
+    CMD+=(--resume)
+  fi
+
+  echo "=============================="
+  echo "dataset=$dataset_name"
+  echo "cwd=$SCRIPT_DIR"
+  echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
+  echo "tensor_parallel_size=$TP_SIZE"
+  echo "DEFAULT_YAML=$source_yaml"
+  echo "TMP_YAML=$tmp_yaml"
+  echo "DOWNLOAD_DIR=$DOWNLOAD_DIR"
+  echo "HF_HOME=$HF_HOME"
+  echo "=============================="
+  echo
+
+  "${CMD[@]}"
+}
+
+if [[ -n "$DATASET_NAME" ]]; then
+  effective_yaml="$DEFAULT_YAML"
+  if [[ -z "$effective_yaml" ]]; then
+    effective_yaml="$(default_yaml_for_dataset "$DATASET_NAME")"
+  fi
+  run_one_dataset "$DATASET_NAME" "$effective_yaml" "$RUN_NAME"
+  exit 0
 fi
 
-echo "cwd=$SCRIPT_DIR"
-echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
-echo "tensor_parallel_size=$TP_SIZE"
-echo "DEFAULT_YAML=$DEFAULT_YAML"
-echo "TMP_YAML=$TMP_YAML"
-echo "DOWNLOAD_DIR=$DOWNLOAD_DIR"
-echo "HF_HOME=$HF_HOME"
-echo
+IFS=',' read -r -a DATASET_ARRAY <<< "$DATASET_SEQUENCE"
+if [[ "${#DATASET_ARRAY[@]}" -lt 1 ]]; then
+  echo "No datasets resolved from DATASET_SEQUENCE=$DATASET_SEQUENCE" >&2
+  exit 1
+fi
 
-"${CMD[@]}"
+for raw_dataset in "${DATASET_ARRAY[@]}"; do
+  dataset_name="$(echo "$raw_dataset" | xargs)"
+  if [[ -z "$dataset_name" ]]; then
+    continue
+  fi
+  effective_yaml="$(default_yaml_for_dataset "$dataset_name")"
+  effective_run_name="$RUN_NAME"
+  if [[ -n "$effective_run_name" ]]; then
+    effective_run_name="${effective_run_name}_${dataset_name}"
+  fi
+  run_one_dataset "$dataset_name" "$effective_yaml" "$effective_run_name"
+done

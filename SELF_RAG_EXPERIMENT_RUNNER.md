@@ -211,6 +211,79 @@ Like NarrativeQA, QASPER can have long paper contexts, so the default SELF-RAG c
 - `selfrag.passage_chunk_tokens: 1400`
 - `selfrag.passage_chunk_overlap_tokens: 250`
 
+## QuALITY
+
+This repo now also includes a native `quality` dataset loader for the standalone runner.
+
+Reference config:
+
+`[configs/selfrag/quality_selfrag.yaml](/Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/quality_selfrag.yaml)`
+
+Run it like this:
+
+```bash
+python3 run_selfrag_experiment.py \
+  --dataset-name quality \
+  --default-yaml /Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/quality_selfrag.yaml
+```
+
+Fields intentionally carried over from your external `quality_retrieval_ablation.yaml`:
+
+- `dataset.split`
+- `dataset.config_name`
+- `dataset.qa_n`
+- `dataset.qa_selection_method`
+- `sample.max_documents` mapped to `dataset.max_docs`
+- `retrieval.retrieve_k` mapped to `selfrag.ndocs`
+- `model.tensor_parallel_size`
+- `model.dtype`
+- `model.gpu_memory_utilization`
+
+The native QuALITY loader also preserves multiple-choice metadata such as:
+
+- `choices`
+- `gold_option_index`
+- `gold_option_label`
+
+inside the selected QA entries and raw run data.
+
+## NovelHopQA
+
+This repo now also includes a native `novelhopqa` dataset loader for the standalone runner.
+
+Reference config:
+
+`[configs/selfrag/novelhopqa_selfrag.yaml](/Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/novelhopqa_selfrag.yaml)`
+
+Run it like this:
+
+```bash
+python3 run_selfrag_experiment.py \
+  --dataset-name novelhopqa \
+  --default-yaml /Users/hslu-n0008110/Library/CloudStorage/OneDrive-HochschuleLuzern/Desktop/SAADI_self-rag/configs/selfrag/novelhopqa_selfrag.yaml
+```
+
+Important: NovelHopQA requires whole-book text files. The default config points to:
+
+```text
+../passing_meta_tag/novelhopqa/book-corpus-root
+```
+
+relative to the SELF-RAG project root, matching the directory layout you described.
+
+Fields intentionally carried over from your external `novelhopqa_retrieval_ablation.yaml`:
+
+- `dataset.split`
+- `dataset.config_name`
+- `dataset.books_root`
+- `dataset.qa_n`
+- `dataset.qa_selection_method`
+- `sample.max_documents` mapped to `dataset.max_docs`
+- `retrieval.retrieve_k` mapped to `selfrag.ndocs`
+- `model.tensor_parallel_size`
+- `model.dtype`
+- `model.gpu_memory_utilization`
+
 ## Important notes
 
 - No separate retrieval evaluation artifacts are written.
