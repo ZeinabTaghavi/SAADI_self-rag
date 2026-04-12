@@ -7,6 +7,5 @@
 data_creation/.DS_Store
 retrieval_lm/.DS_Store
 selfrag_experiment/.DS_Store
+# Run outputs (large traces may exceed GitHub limits; keep locally or use LFS)
 selfrag_runs/
-# >100MB; exceeds GitHub limit — keep locally or use Git LFS
-selfrag_runs/narrativeqa/narrativeqa_selfrag_reference/rag/rag_run_traces.jsonl
