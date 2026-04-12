@@ -5,7 +5,7 @@ dataset:
   source_type: novelhopqa
   split: test
   config_name: all
-  books_root: ../passing_meta_tag/novelhopqa/book-corpus-root
+  books_root: ../../../passing_meta_tag/novelhopqa/book-corpus-root
   qa_n: all
   qa_selection_method: first
   max_docs: 25

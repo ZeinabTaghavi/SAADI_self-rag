@@ -416,7 +416,11 @@ class ExperimentRunner:
         self.dataset_name = dataset_name
         self.default_yaml_path = default_yaml_path
         self.default_yaml = load_yaml_file(default_yaml_path)
-        self.resolved_cfg, self.notes = resolve_run_config(self.default_yaml, dataset_name)
+        self.resolved_cfg, self.notes = resolve_run_config(
+            self.default_yaml,
+            dataset_name,
+            default_yaml_path=default_yaml_path,
+        )
         self.run_root = Path(self.resolved_cfg["run_root"])
         self.resume = resume
         self.paths = {

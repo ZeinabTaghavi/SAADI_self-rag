@@ -57,9 +57,24 @@ def _string_or_none(value: Any) -> Optional[str]:
     return text or None
 
 
-def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple[Dict[str, Any], List[str]]:
+def _resolve_optional_path(value: Any, base_dir: Optional[Path]) -> Optional[str]:
+    text = _string_or_none(value)
+    if text is None:
+        return None
+    path = Path(text).expanduser()
+    if not path.is_absolute() and base_dir is not None:
+        path = (base_dir / path).resolve()
+    return str(path)
+
+
+def resolve_run_config(
+    default_yaml: Dict[str, Any],
+    dataset_name: str,
+    default_yaml_path: Optional[str] = None,
+) -> Tuple[Dict[str, Any], List[str]]:
     config = deepcopy(default_yaml)
     notes: List[str] = []
+    yaml_base_dir = Path(default_yaml_path).resolve().parent if default_yaml_path else None
 
     run_name = _string_or_none(
         first_value(
@@ -89,14 +104,26 @@ def resolve_run_config(default_yaml: Dict[str, Any], dataset_name: str) -> Tuple
             default="jsonl",
         ),
         "dataset_name": _string_or_none(first_value(config, ["dataset.name", "data.name"], default=dataset_name)),
-        "source": _string_or_none(first_value(config, ["dataset.source", "data.source", "dataset.path", "data.path"])),
+        "source": _resolve_optional_path(
+            first_value(config, ["dataset.source", "data.source", "dataset.path", "data.path"]),
+            yaml_base_dir,
+        ),
         "split": _string_or_none(first_value(config, ["dataset.split", "data.split"], default="train")),
         "subset": _string_or_none(first_value(config, ["dataset.subset", "data.subset"])),
         "config_name": _string_or_none(first_value(config, ["dataset.config_name", "data.config_name"])),
-        "books_root": _string_or_none(first_value(config, ["dataset.books_root", "data.books_root"])),
+        "books_root": _resolve_optional_path(
+            first_value(config, ["dataset.books_root", "data.books_root"]),
+            yaml_base_dir,
+        ),
         "data_files": first_value(config, ["dataset.data_files", "data.data_files"]),
-        "qa_path": _string_or_none(first_value(config, ["dataset.qa_path", "data.qa_path", "qa.path"])),
-        "docs_path": _string_or_none(first_value(config, ["dataset.docs_path", "data.docs_path", "corpus.path"])),
+        "qa_path": _resolve_optional_path(
+            first_value(config, ["dataset.qa_path", "data.qa_path", "qa.path"]),
+            yaml_base_dir,
+        ),
+        "docs_path": _resolve_optional_path(
+            first_value(config, ["dataset.docs_path", "data.docs_path", "corpus.path"]),
+            yaml_base_dir,
+        ),
         "question_field": first_value(config, ["dataset.question_field", "data.question_field"], default="question"),
         "answers_field": first_value(
             config,
