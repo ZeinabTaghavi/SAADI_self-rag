@@ -3,6 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+ROOT_DIR="${ROOT_DIR:-$SCRIPT_DIR}"
 
 # Default usage:
 #   GPU_IDS=4,5,6,7 ./run_selfrag_multi_gpu.sh
@@ -22,8 +23,15 @@ GPU_IDS="${GPU_IDS:-4,5,6,7}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.85}"
 DTYPE="${DTYPE:-bfloat16}"
 MODEL_NAME="${MODEL_NAME:-selfrag/selfrag_llama2_7b}"
-DOWNLOAD_DIR="${DOWNLOAD_DIR:-$SCRIPT_DIR/.cache}"
-HF_HOME="${HF_HOME:-$SCRIPT_DIR/.hf_home}"
+export PYTHONPATH="${PYTHONPATH:-${ROOT_DIR}/src}"
+HF_CACHE_ROOT="${SAADI_HF_CACHE_ROOT:-/mnt/cache/taghavi}"
+export HF_HOME="${HF_HOME:-${HF_CACHE_ROOT}}"
+export HF_HUB_CACHE="${HF_HUB_CACHE:-${HF_HOME}/hub}"
+export HF_DATASETS_CACHE="${HF_DATASETS_CACHE:-${HF_HOME}/datasets}"
+export TRANSFORMERS_CACHE="${TRANSFORMERS_CACHE:-${HF_HOME}/transformers}"
+export TOKENIZERS_PARALLELISM="${TOKENIZERS_PARALLELISM:-false}"
+export DRY_RUN="${DRY_RUN:-0}"
+DOWNLOAD_DIR="${DOWNLOAD_DIR:-${HF_HOME}}"
 NOVELHOPQA_BOOKS_ROOT="${NOVELHOPQA_BOOKS_ROOT:-/home/iataghav/data/passing_meta_tag/novelhopqa/book-corpus-root}"
 NOVELHOPQA_SUBSET_MODE_DEFAULT="${NOVELHOPQA_SUBSET_MODE_DEFAULT:-1}"
 
@@ -55,13 +63,10 @@ if [[ "$TP_SIZE" -lt 1 ]]; then
   exit 1
 fi
 
-mkdir -p "$DOWNLOAD_DIR" "$HF_HOME" "$HF_HOME/hub" "$HF_HOME/transformers" "$SCRIPT_DIR/.tmp"
+mkdir -p "$DOWNLOAD_DIR" "$HF_HOME" "$HF_HUB_CACHE" "$HF_DATASETS_CACHE" "$TRANSFORMERS_CACHE" "$SCRIPT_DIR/.tmp"
 
 export CUDA_VISIBLE_DEVICES="$GPU_IDS"
-export HF_HOME
-export HUGGINGFACE_HUB_CACHE="$HF_HOME/hub"
-export TRANSFORMERS_CACHE="$HF_HOME/transformers"
-export TOKENIZERS_PARALLELISM=false
+export HUGGINGFACE_HUB_CACHE="${HUGGINGFACE_HUB_CACHE:-$HF_HUB_CACHE}"
 
 default_yaml_for_dataset() {
   local dataset_name="$1"
@@ -201,6 +206,10 @@ run_one_dataset() {
   echo "TMP_YAML=$tmp_yaml"
   echo "DOWNLOAD_DIR=$DOWNLOAD_DIR"
   echo "HF_HOME=$HF_HOME"
+  echo "HF_HUB_CACHE=$HF_HUB_CACHE"
+  echo "HF_DATASETS_CACHE=$HF_DATASETS_CACHE"
+  echo "TRANSFORMERS_CACHE=$TRANSFORMERS_CACHE"
+  echo "PYTHONPATH=$PYTHONPATH"
   if [[ "$dataset_name" == "novelhopqa" ]]; then
     echo "NOVELHOPQA_BOOKS_ROOT=$NOVELHOPQA_BOOKS_ROOT"
     echo "NOVELHOPQA_SUBSET_MODE=$NOVELHOPQA_SUBSET_MODE"
