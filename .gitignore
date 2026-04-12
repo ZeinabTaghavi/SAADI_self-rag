@@ -1,5 +1,12 @@
+.hf_home/
+.cache/
+.tmp/
+
 .DS_Store
 .hf_home/.DS_Store
 data_creation/.DS_Store
 retrieval_lm/.DS_Store
 selfrag_experiment/.DS_Store
+selfrag_runs/
+# >100MB; exceeds GitHub limit — keep locally or use Git LFS
+selfrag_runs/narrativeqa/narrativeqa_selfrag_reference/rag/rag_run_traces.jsonl

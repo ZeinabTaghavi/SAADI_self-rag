@@ -1,0 +1,29 @@
+[
+  {
+    "query_id": "0",
+    "doc_id": "03c1b3e8-8aba-4a59-8a56-e24c4a2b88ec",
+    "question": "Where was José Luis Picardo born and raised?",
+    "reference_answers": [
+      "He was born in Jerez de la Frontera, in the Province of Cádiz in Andalucía, Spain. He later moved to Madrid with his family."
+    ],
+    "provided_context_count": 1
+  },
+  {
+    "query_id": "1",
+    "doc_id": "03c1b3e8-8aba-4a59-8a56-e24c4a2b88ec",
+    "question": "Did José Luis Picardo receive any awards or recognition for his work?",
+    "reference_answers": [
+      "No."
+    ],
+    "provided_context_count": 1
+  },
+  {
+    "query_id": "2",
+    "doc_id": "03c1b3e8-8aba-4a59-8a56-e24c4a2b88ec",
+    "question": "What were some of the subjects that Picardo illustrated in his post-student days?",
+    "reference_answers": [
+      "Madrid in the 1950s and 1960s, the Spanish protectorate in Morocco, and sketches of the Canarias (Canary Islands) in 1953."
+    ],
+    "provided_context_count": 1
+  }
+]

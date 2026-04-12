@@ -1,0 +1,78 @@
+dataset_name: loogle
+run_name: loogle_selfrag_reference
+run_root: /mnt/data/zeinab/SAADI_self-rag/selfrag_runs/loogle/loogle_selfrag_reference
+dataset_loader:
+  source_type: loogle
+  dataset_name: loogle
+  source: null
+  split: test
+  subset: null
+  config_name: shortdep_qa
+  books_root: null
+  data_files: null
+  qa_path: null
+  docs_path: null
+  question_field: question
+  answers_field: answers
+  query_id_field: id
+  doc_id_field: doc_id
+  contexts_field: null
+  document_id_field: doc_id
+  document_text_field: text
+  document_title_field: title
+  max_questions: null
+  max_docs: 25
+  qa_n: all
+  qa_selection_method: first
+  question_ids: []
+  task: qa
+model:
+  model_name: selfrag/selfrag_llama2_7b
+  tokenizer_name: null
+  download_dir: /home/iataghav/data/SAADI_self-rag/.cache
+  dtype: bfloat16
+  tensor_parallel_size: 4
+  gpu_memory_utilization: 0.85
+  max_context_tokens: 4096
+  cuda_visible_devices: 4,5,6,7
+decoding:
+  temperature: 0.0
+  top_p: 1.0
+  max_new_tokens: 256
+selfrag:
+  pipeline_type: short_form
+  mode: adaptive_retrieval
+  ndocs: 5
+  threshold: 0.2
+  beam_width: 2
+  max_depth: 2
+  use_grounding: true
+  use_utility: true
+  use_seqscore: true
+  w_rel: 1.0
+  w_sup: 1.0
+  w_use: 0.5
+  scoring_strategy: marker
+  passage_chunk_tokens: 1200
+  passage_chunk_overlap_tokens: 200
+retrieval:
+  backend: provided_contexts
+  model_name_or_path: facebook/contriever-msmarco
+  retrieve_k: 5
+  passages: null
+  passages_embeddings: null
+  n_docs: 5
+  save_or_load_index: false
+  no_fp16: false
+  question_maxlength: 512
+  per_gpu_batch_size: 64
+  lowercase: false
+  normalize_text: false
+  indexing_batch_size: 1000000
+  n_subquantizers: 0
+  n_bits: 8
+  projection_size: 768
+profiling:
+  enabled: true
+  capture_resource_usage: true
+ignored_default_yaml_fields: []

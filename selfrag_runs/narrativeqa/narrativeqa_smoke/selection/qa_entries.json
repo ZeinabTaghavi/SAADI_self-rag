@@ -1,0 +1,29 @@
+[
+  {
+    "query_id": "0",
+    "doc_id": "0025577043f5090cd603c6aea60f26e236195594",
+    "question": "Who is Mark Hunter?",
+    "reference_answers": [
+      "He is a high school student in Phoenix.\nA loner and outsider student with a radio station."
+    ],
+    "provided_context_count": 1
+  },
+  {
+    "query_id": "1",
+    "doc_id": "0025577043f5090cd603c6aea60f26e236195594",
+    "question": "Where does this radio station take place?",
+    "reference_answers": [
+      "It takes place in Mark's parents basement.\nPhoenix, Arizona"
+    ],
+    "provided_context_count": 1
+  },
+  {
+    "query_id": "2",
+    "doc_id": "0025577043f5090cd603c6aea60f26e236195594",
+    "question": "Why do more students tune into Mark's show?",
+    "reference_answers": [
+      "Mark talks about what goes on at school and in the community.\nBecause he has a thing to say about what is happening at his school and the community."
+    ],
+    "provided_context_count": 1
+  }
+]

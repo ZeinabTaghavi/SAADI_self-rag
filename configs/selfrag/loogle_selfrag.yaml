@@ -39,7 +39,7 @@ selfrag:
 
 retrieval:
   backend: provided_contexts
-  retrieve_k: 5
+  retrieve_k: 10
 
 
 profiling:
