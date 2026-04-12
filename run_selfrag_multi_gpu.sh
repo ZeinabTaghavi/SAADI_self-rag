@@ -8,13 +8,10 @@ cd "$SCRIPT_DIR"
 #   GPU_IDS=4,5,6,7 ./run_selfrag_multi_gpu.sh
 #
 # Run all default datasets explicitly:
-#   GPU_IDS=4,5,6,7 DATASET_SEQUENCE=loogle,narrativeqa,qasper,quality ./run_selfrag_multi_gpu.sh
+#   GPU_IDS=4,5,6,7 DATASET_SEQUENCE=loogle,narrativeqa,qasper,quality,novelhopqa ./run_selfrag_multi_gpu.sh
 #
 # Single-dataset smoke test:
 #   GPU_IDS=4,5,6,7 DATASET_NAME=loogle MAX_DOCS=1 QA_N=3 ./run_selfrag_multi_gpu.sh
-
- NOVELHOPQA_SUBSET_MODE=1 
- NOVELHOPQA_BOOKS_ROOT=/mnt/data/zeinab/passing_meta_tag/novelhopqa/book-corpus-root
 
 DATASET_NAME="${DATASET_NAME:-}"
 DATASET_SEQUENCE="${DATASET_SEQUENCE:-loogle,narrativeqa,qasper,quality,novelhopqa}"
@@ -27,6 +24,8 @@ DTYPE="${DTYPE:-bfloat16}"
 MODEL_NAME="${MODEL_NAME:-selfrag/selfrag_llama2_7b}"
 DOWNLOAD_DIR="${DOWNLOAD_DIR:-$SCRIPT_DIR/.cache}"
 HF_HOME="${HF_HOME:-$SCRIPT_DIR/.hf_home}"
+NOVELHOPQA_BOOKS_ROOT="${NOVELHOPQA_BOOKS_ROOT:-/home/iataghav/data/passing_meta_tag/novelhopqa/book-corpus-root}"
+NOVELHOPQA_SUBSET_MODE_DEFAULT="${NOVELHOPQA_SUBSET_MODE_DEFAULT:-1}"
 
 # Optional fast-test overrides.
 RUN_NAME="${RUN_NAME:-}"
@@ -166,10 +165,19 @@ run_one_dataset() {
   local source_yaml="$2"
   local effective_run_name="$3"
   local tmp_yaml="$SCRIPT_DIR/.tmp/${dataset_name}_selfrag_runtime.yaml"
+  local had_novelhopqa_subset_mode="${NOVELHOPQA_SUBSET_MODE+x}"
+  local previous_novelhopqa_subset_mode="${NOVELHOPQA_SUBSET_MODE:-}"
+  local had_novelhopqa_books_root="${NOVELHOPQA_BOOKS_ROOT+x}"
+  local previous_novelhopqa_books_root="${NOVELHOPQA_BOOKS_ROOT:-}"
 
   if [[ ! -f "$source_yaml" ]]; then
     echo "DEFAULT_YAML does not exist for dataset '$dataset_name': $source_yaml" >&2
     exit 1
+  fi
+
+  if [[ "$dataset_name" == "novelhopqa" ]]; then
+    export NOVELHOPQA_SUBSET_MODE="${NOVELHOPQA_SUBSET_MODE:-$NOVELHOPQA_SUBSET_MODE_DEFAULT}"
+    export NOVELHOPQA_BOOKS_ROOT="${NOVELHOPQA_BOOKS_ROOT:-/home/iataghav/data/passing_meta_tag/novelhopqa/book-corpus-root}"
   fi
 
   write_runtime_yaml "$dataset_name" "$source_yaml" "$tmp_yaml" "$effective_run_name"
@@ -193,10 +201,27 @@ run_one_dataset() {
   echo "TMP_YAML=$tmp_yaml"
   echo "DOWNLOAD_DIR=$DOWNLOAD_DIR"
   echo "HF_HOME=$HF_HOME"
+  if [[ "$dataset_name" == "novelhopqa" ]]; then
+    echo "NOVELHOPQA_BOOKS_ROOT=$NOVELHOPQA_BOOKS_ROOT"
+    echo "NOVELHOPQA_SUBSET_MODE=$NOVELHOPQA_SUBSET_MODE"
+  fi
   echo "=============================="
   echo
 
   "${CMD[@]}"
+
+  if [[ "$dataset_name" == "novelhopqa" ]]; then
+    if [[ -n "$had_novelhopqa_subset_mode" ]]; then
+      export NOVELHOPQA_SUBSET_MODE="$previous_novelhopqa_subset_mode"
+    else
+      unset NOVELHOPQA_SUBSET_MODE
+    fi
+    if [[ -n "$had_novelhopqa_books_root" ]]; then
+      export NOVELHOPQA_BOOKS_ROOT="$previous_novelhopqa_books_root"
+    else
+      unset NOVELHOPQA_BOOKS_ROOT
+    fi
+  fi
 }
 
 if [[ -n "$DATASET_NAME" ]]; then
