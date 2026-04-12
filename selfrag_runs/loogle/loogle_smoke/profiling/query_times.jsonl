@@ -1,3 +1,0 @@
-{"query_id": "0", "doc_id": "03c1b3e8-8aba-4a59-8a56-e24c4a2b88ec", "retrieval_latency_ms": 0.007680995622649789, "generation_latency_ms": 1562.3252350196708, "total_latency_ms": 1853.7669659999665}
-{"query_id": "1", "doc_id": "03c1b3e8-8aba-4a59-8a56-e24c4a2b88ec", "retrieval_latency_ms": 0.00925999484024942, "generation_latency_ms": 1568.0467479978688, "total_latency_ms": 1755.4034519998822}
-{"query_id": "2", "doc_id": "03c1b3e8-8aba-4a59-8a56-e24c4a2b88ec", "retrieval_latency_ms": 0.012989010429009795, "generation_latency_ms": 1298.1398229894694, "total_latency_ms": 1395.3280960267875}

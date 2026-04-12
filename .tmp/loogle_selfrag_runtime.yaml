@@ -36,7 +36,7 @@ selfrag:
   passage_chunk_overlap_tokens: 200
 retrieval:
   backend: provided_contexts
-  retrieve_k: 5
+  retrieve_k: 10
 profiling:
   enabled: true
   capture_resource_usage: true

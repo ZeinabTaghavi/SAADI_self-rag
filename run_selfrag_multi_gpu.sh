@@ -8,10 +8,13 @@ cd "$SCRIPT_DIR"
 #   GPU_IDS=4,5,6,7 ./run_selfrag_multi_gpu.sh
 #
 # Run all default datasets explicitly:
-#   GPU_IDS=4,5,6,7 DATASET_SEQUENCE=loogle,narrativeqa,qasper,quality,novelhopqa ./run_selfrag_multi_gpu.sh
+#   GPU_IDS=4,5,6,7 DATASET_SEQUENCE=loogle,narrativeqa,qasper,quality ./run_selfrag_multi_gpu.sh
 #
 # Single-dataset smoke test:
 #   GPU_IDS=4,5,6,7 DATASET_NAME=loogle MAX_DOCS=1 QA_N=3 ./run_selfrag_multi_gpu.sh
+
+ NOVELHOPQA_SUBSET_MODE=1 
+ NOVELHOPQA_BOOKS_ROOT=/mnt/data/zeinab/passing_meta_tag/novelhopqa/book-corpus-root
 
 DATASET_NAME="${DATASET_NAME:-}"
 DATASET_SEQUENCE="${DATASET_SEQUENCE:-loogle,narrativeqa,qasper,quality,novelhopqa}"
