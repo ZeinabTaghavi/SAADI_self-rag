@@ -1,4 +1,7 @@
 {
+  "bertscore_f1": null,
+  "bertscore_precision": null,
+  "bertscore_recall": null,
   "context_tokens_mean": 612.9164785553047,
   "dataset_name": "quality",
   "exact_match": 0.0,

@@ -1,4 +1,7 @@
 {
+  "bertscore_f1": null,
+  "bertscore_precision": null,
+  "bertscore_recall": null,
   "context_tokens_mean": 685.4345509893456,
   "dataset_name": "novelhopqa",
   "exact_match": 0.0015220700152207,

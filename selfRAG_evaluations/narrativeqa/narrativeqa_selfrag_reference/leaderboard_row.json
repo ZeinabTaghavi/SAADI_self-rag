@@ -1,4 +1,7 @@
 {
+  "bertscore_f1": null,
+  "bertscore_precision": null,
+  "bertscore_recall": null,
   "context_tokens_mean": 620.2862745098039,
   "dataset_name": "narrativeqa",
   "exact_match": 0.0,
