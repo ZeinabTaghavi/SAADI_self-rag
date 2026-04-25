@@ -3,9 +3,9 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 RUNS_ROOT="${RUNS_ROOT:-${ROOT_DIR}/selfrag_runs}"
+EVALS_ROOT="${EVALS_ROOT:-${ROOT_DIR}/selfRAG_evaluations}"
 METHOD_NAME="${METHOD_NAME:-selfrag}"
 GENERATION_TOP_K="${GENERATION_TOP_K:-10}"
-OUTPUT_SUBDIR="${OUTPUT_SUBDIR:-evaluation}"
 INCLUDE_INCOMPLETE="${INCLUDE_INCOMPLETE:-0}"
 
 DATASETS=(
@@ -22,14 +22,14 @@ Run compact RAG evaluation for every completed run under selfrag_runs/<dataset>/
 
 Defaults:
   RUNS_ROOT=./selfrag_runs
+  EVALS_ROOT=./selfRAG_evaluations
   METHOD_NAME=selfrag
   GENERATION_TOP_K=10
-  OUTPUT_SUBDIR=evaluation
 
 Examples:
   ./run_all_rag_evaluations.sh
 
-  RUNS_ROOT=/path/to/selfrag_runs METHOD_NAME=selfrag ./run_all_rag_evaluations.sh
+  RUNS_ROOT=/path/to/selfrag_runs EVALS_ROOT=/path/to/selfRAG_evaluations METHOD_NAME=selfrag ./run_all_rag_evaluations.sh
 
   INCLUDE_INCOMPLETE=1 ./run_all_rag_evaluations.sh
 
@@ -50,6 +50,8 @@ if [[ ! -d "${RUNS_ROOT}" ]]; then
   exit 1
 fi
 
+mkdir -p "${EVALS_ROOT}"
+
 evaluated=0
 skipped=0
 
@@ -57,6 +59,7 @@ for dataset_entry in "${DATASETS[@]}"; do
   dataset="${dataset_entry%%:*}"
   split="${dataset_entry#*:}"
   dataset_dir="${RUNS_ROOT}/${dataset}"
+  mkdir -p "${EVALS_ROOT}/${dataset}"
 
   if [[ ! -d "${dataset_dir}" ]]; then
     echo "[skip] ${dataset}: no directory at ${dataset_dir}"
@@ -76,7 +79,7 @@ for dataset_entry in "${DATASETS[@]}"; do
       continue
     fi
 
-    output_dir="${run_dir}/${OUTPUT_SUBDIR}"
+    output_dir="${EVALS_ROOT}/${dataset}/${run_name}"
     echo "[eval] ${dataset}/${run_name} -> ${output_dir}"
 
     python3 "${ROOT_DIR}/evaluate_rag_run.py" \

@@ -4,7 +4,7 @@ Use `evaluate_rag_run.py` after a retrieval plus generation run has already fini
 
 ## One-command usage
 
-Evaluate every completed run under `selfrag_runs/<dataset>/`:
+Evaluate every completed run under `selfrag_runs/<dataset>/` and write results under `selfRAG_evaluations/<dataset>/<run_name>/`:
 
 ```bash
 ./run_all_rag_evaluations.sh
@@ -14,6 +14,12 @@ The all-runs wrapper covers `loogle`, `narrativeqa`, `novelhopqa`, `qasper`, and
 
 ```bash
 INCLUDE_INCOMPLETE=1 ./run_all_rag_evaluations.sh
+```
+
+To choose a different evaluation root:
+
+```bash
+EVALS_ROOT=/path/to/selfRAG_evaluations ./run_all_rag_evaluations.sh
 ```
 
 Evaluate one run directly:
