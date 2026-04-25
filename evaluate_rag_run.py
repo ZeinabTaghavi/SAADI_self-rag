@@ -16,6 +16,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 
 METRIC_KEYS = ("recall", "mrr", "ndcg", "hit_rate")
+BERTSCORE_KEYS = ("bertscore_precision", "bertscore_recall", "bertscore_f1")
 EFFICIENCY_FIELDS = (
     "retrieval_latency_ms",
     "generation_latency_ms",
@@ -320,6 +321,68 @@ def rouge_l(prediction: Any, references: Sequence[Any]) -> Optional[float]:
     return best
 
 
+def compute_bert_scores(
+    items: Sequence[Tuple[str, str, Sequence[Any]]],
+    *,
+    model_type: str,
+    lang: str,
+    batch_size: int,
+    device: Optional[str],
+    rescale_with_baseline: bool,
+) -> Tuple[Dict[str, Dict[str, Optional[float]]], Optional[str]]:
+    empty = {qid: {key: None for key in BERTSCORE_KEYS} for qid, _, _ in items}
+    pair_predictions: List[str] = []
+    pair_references: List[str] = []
+    pair_query_ids: List[str] = []
+    for qid, prediction, references in items:
+        refs = [str(ref).strip() for ref in references if str(ref).strip()]
+        pred = str(prediction).strip()
+        if not pred or not refs:
+            continue
+        for ref in refs:
+            pair_query_ids.append(qid)
+            pair_predictions.append(pred)
+            pair_references.append(ref)
+
+    if not pair_predictions:
+        return empty, "No non-empty prediction/reference pairs were available for BERTScore."
+
+    try:
+        from bert_score import score as bert_score_score  # type: ignore
+    except Exception as exc:
+        return empty, f"BERTScore could not be imported: {exc}"
+
+    kwargs: Dict[str, Any] = {
+        "batch_size": batch_size,
+        "rescale_with_baseline": rescale_with_baseline,
+        "verbose": False,
+    }
+    if model_type:
+        kwargs["model_type"] = model_type
+    if lang:
+        kwargs["lang"] = lang
+    if device:
+        kwargs["device"] = device
+
+    try:
+        precision, recall, f1 = bert_score_score(pair_predictions, pair_references, **kwargs)
+    except Exception as exc:
+        return empty, f"BERTScore computation failed: {exc}"
+
+    scores = dict(empty)
+    for qid, p_value, r_value, f_value in zip(pair_query_ids, precision.tolist(), recall.tolist(), f1.tolist()):
+        candidate = {
+            "bertscore_precision": float(p_value),
+            "bertscore_recall": float(r_value),
+            "bertscore_f1": float(f_value),
+        }
+        current = scores.get(qid, {key: None for key in BERTSCORE_KEYS})
+        current_f1 = current.get("bertscore_f1")
+        if current_f1 is None or candidate["bertscore_f1"] > current_f1:
+            scores[qid] = candidate
+    return scores, None
+
+
 def ndcg_at_k(ranked_ids: Sequence[str], relevant_ids: Sequence[str], k: int) -> float:
     relevant = set(relevant_ids)
     if not relevant:
@@ -427,7 +490,7 @@ def load_gpu_memory_by_query(resource_path: Optional[Path]) -> Dict[str, float]:
 
 
 def package_versions() -> Dict[str, Optional[str]]:
-    packages = ["python", "numpy", "rouge-score", "torch", "transformers", "vllm", "datasets"]
+    packages = ["python", "bert-score", "numpy", "rouge-score", "torch", "transformers", "vllm", "datasets"]
     versions: Dict[str, Optional[str]] = {"python": platform.python_version()}
     for package in packages:
         if package == "python":
@@ -453,6 +516,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--predictions-file", help="Optional generated-answer file. Defaults to rag/qa_predictions.jsonl when present.")
     parser.add_argument("--retrieval-file", help="Optional raw ranked retrieval output file.")
     parser.add_argument("--traces-file", help="Optional RAG trace file used as a fallback for retrieved ids.")
+    parser.add_argument("--disable-bert-score", action="store_true", help="Skip BERTScore computation.")
+    parser.add_argument("--bert-score-model", default="roberta-large", help="Model used by bert-score. Default: roberta-large.")
+    parser.add_argument("--bert-score-lang", default="en", help="Language passed to bert-score. Default: en.")
+    parser.add_argument("--bert-score-batch-size", type=int, default=16)
+    parser.add_argument("--bert-score-device", help="Optional bert-score device, for example cuda:0 or cpu.")
+    parser.add_argument(
+        "--bert-score-rescale-with-baseline",
+        action="store_true",
+        help="Use bert-score baseline rescaling when available.",
+    )
     parser.add_argument(
         "--disable-doc-id-label-fallback",
         action="store_true",
@@ -528,6 +601,7 @@ def main() -> None:
                 query_ids.append(qid)
 
     per_query_rows: List[Dict[str, Any]] = []
+    bert_score_items: List[Tuple[str, str, Sequence[Any]]] = []
     metrics_by_view: Dict[str, Dict[str, List[float]]] = defaultdict(lambda: defaultdict(list))
     primary_scores: Dict[str, List[float]] = defaultdict(list)
     generation_scores: Dict[str, List[float]] = defaultdict(list)
@@ -568,6 +642,8 @@ def main() -> None:
             first_present(answers_by_id.get(qid, {}), ("reference_answers", "answers", "answer", "gold_answers"))
         ) or listify(first_present(label, ("reference_answers", "answers", "answer", "gold_answers")))
         prediction_text = first_present(prediction, ("prediction", "final_prediction", "answer", "generated_answer", "output"))
+        if prediction_text is not None and reference_answers:
+            bert_score_items.append((qid, str(prediction_text), reference_answers))
 
         views: Dict[str, Any] = {
             "gold": dedupe_preserve_order(gold_ids),
@@ -661,6 +737,9 @@ def main() -> None:
             "exact_match": em,
             "token_f1": f1,
             "rouge_l": rouge,
+            "bertscore_precision": None,
+            "bertscore_recall": None,
+            "bertscore_f1": None,
             "retrieval_latency_ms": efficiency["retrieval_latency_ms"],
             "generation_latency_ms": efficiency["generation_latency_ms"],
             "total_latency_ms": efficiency["total_latency_ms"],
@@ -675,6 +754,34 @@ def main() -> None:
         if any(score is not None for score in retrieved_scores[:10]):
             out_row["retrieved_scores_top10"] = retrieved_scores[:10]
         per_query_rows.append(out_row)
+
+    if args.disable_bert_score:
+        assumptions.append("BERTScore computation was disabled by --disable-bert-score.")
+        missing_reasons["bert_score"] = "BERTScore computation was disabled."
+    else:
+        bert_scores, bert_error = compute_bert_scores(
+            bert_score_items,
+            model_type=args.bert_score_model,
+            lang=args.bert_score_lang,
+            batch_size=args.bert_score_batch_size,
+            device=args.bert_score_device,
+            rescale_with_baseline=args.bert_score_rescale_with_baseline,
+        )
+        if bert_error is not None:
+            missing_reasons["bert_score"] = bert_error
+        else:
+            assumptions.append(
+                "BERTScore was computed with best-over-references selection per query "
+                f"using model={args.bert_score_model}, lang={args.bert_score_lang}, "
+                f"rescale_with_baseline={args.bert_score_rescale_with_baseline}."
+            )
+        for row in per_query_rows:
+            qid = str(row.get("query_id", ""))
+            values = bert_scores.get(qid, {key: None for key in BERTSCORE_KEYS})
+            for key in BERTSCORE_KEYS:
+                row[key] = values.get(key)
+                if row[key] is not None:
+                    generation_scores[key].append(float(row[key]))
 
     if doc_id_fallback_used:
         assumptions.append("Explicit gold/silver relevance ids were absent for at least one query, so doc_id was used as a gold relevance id.")
@@ -699,6 +806,9 @@ def main() -> None:
         "exact_match": statistics.fmean(generation_scores["exact_match"]) if generation_scores["exact_match"] else None,
         "token_f1": statistics.fmean(generation_scores["token_f1"]) if generation_scores["token_f1"] else None,
         "rouge_l": statistics.fmean(generation_scores["rouge_l"]) if generation_scores["rouge_l"] else None,
+        "bertscore_precision": statistics.fmean(generation_scores["bertscore_precision"]) if generation_scores["bertscore_precision"] else None,
+        "bertscore_recall": statistics.fmean(generation_scores["bertscore_recall"]) if generation_scores["bertscore_recall"] else None,
+        "bertscore_f1": statistics.fmean(generation_scores["bertscore_f1"]) if generation_scores["bertscore_f1"] else None,
     }
     efficiency_summary = {field: summary_stats(efficiency_values[field]) for field in EFFICIENCY_FIELDS}
 
@@ -726,6 +836,9 @@ def main() -> None:
         "exact_match": rag_metrics["exact_match"],
         "token_f1": rag_metrics["token_f1"],
         "rouge_l": rag_metrics["rouge_l"],
+        "bertscore_precision": rag_metrics["bertscore_precision"],
+        "bertscore_recall": rag_metrics["bertscore_recall"],
+        "bertscore_f1": rag_metrics["bertscore_f1"],
         "retrieval_latency_mean_ms": efficiency_summary["retrieval_latency_ms"]["mean"],
         "generation_latency_mean_ms": efficiency_summary["generation_latency_ms"]["mean"],
         "total_latency_mean_ms": efficiency_summary["total_latency_ms"]["mean"],
@@ -768,6 +881,15 @@ def main() -> None:
         "missing_metrics_and_reasons": missing_reasons,
         "command_used": " ".join(sys.argv),
         "package_versions": package_versions(),
+        "bert_score_config": {
+            "enabled": not args.disable_bert_score,
+            "model": args.bert_score_model,
+            "lang": args.bert_score_lang,
+            "batch_size": args.bert_score_batch_size,
+            "device": args.bert_score_device,
+            "rescale_with_baseline": args.bert_score_rescale_with_baseline,
+            "best_over_references": True,
+        },
     }
 
     write_json(output_files["metrics_summary"], summary)

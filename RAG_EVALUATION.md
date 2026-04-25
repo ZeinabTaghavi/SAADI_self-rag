@@ -33,7 +33,9 @@ Evaluate one run directly:
   --dataset-name novelhopqa \
   --split test \
   --ks 5 10 \
-  --generation-top-k 10
+  --generation-top-k 10 \
+  --bert-score-model roberta-large \
+  --bert-score-lang en
 ```
 
 `--labels-file` may be omitted when the run has `selection/qa_entries.json`. Use `--answers-file` when reference answers live separately from retrieval labels.
@@ -72,3 +74,24 @@ The output directory contains:
 - `evaluation_manifest.json`
 
 Generation metrics are computed from already-generated predictions. The manifest records `generation_top_k = 10`; the evaluator does not invent generation@5 when the run generated from top-10 context.
+
+The RAG metric block reports:
+
+- `exact_match`
+- `token_f1`
+- `rouge_l`
+- `bertscore_precision`
+- `bertscore_recall`
+- `bertscore_f1`
+
+BERTScore uses best-over-references selection per query, mirroring the existing EM/F1/ROUGE behavior. By default it uses `roberta-large` with `lang=en`. For quick smoke tests, disable it with:
+
+```bash
+DISABLE_BERT_SCORE=1 ./run_all_rag_evaluations.sh
+```
+
+For GPU-controlled runs, set:
+
+```bash
+BERT_SCORE_DEVICE=cuda:0 BERT_SCORE_BATCH_SIZE=8 ./run_all_rag_evaluations.sh
+```

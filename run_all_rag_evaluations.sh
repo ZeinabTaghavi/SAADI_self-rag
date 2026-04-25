@@ -7,6 +7,12 @@ EVALS_ROOT="${EVALS_ROOT:-${ROOT_DIR}/selfRAG_evaluations}"
 METHOD_NAME="${METHOD_NAME:-selfrag}"
 GENERATION_TOP_K="${GENERATION_TOP_K:-10}"
 INCLUDE_INCOMPLETE="${INCLUDE_INCOMPLETE:-0}"
+DISABLE_BERT_SCORE="${DISABLE_BERT_SCORE:-0}"
+BERT_SCORE_MODEL="${BERT_SCORE_MODEL:-roberta-large}"
+BERT_SCORE_LANG="${BERT_SCORE_LANG:-en}"
+BERT_SCORE_BATCH_SIZE="${BERT_SCORE_BATCH_SIZE:-16}"
+BERT_SCORE_DEVICE="${BERT_SCORE_DEVICE:-}"
+BERT_SCORE_RESCALE_WITH_BASELINE="${BERT_SCORE_RESCALE_WITH_BASELINE:-0}"
 
 DATASETS=(
   "loogle:test"
@@ -25,6 +31,7 @@ Defaults:
   EVALS_ROOT=./selfRAG_evaluations
   METHOD_NAME=selfrag
   GENERATION_TOP_K=10
+  BERT_SCORE_MODEL=roberta-large
 
 Examples:
   ./run_all_rag_evaluations.sh
@@ -32,6 +39,10 @@ Examples:
   RUNS_ROOT=/path/to/selfrag_runs EVALS_ROOT=/path/to/selfRAG_evaluations METHOD_NAME=selfrag ./run_all_rag_evaluations.sh
 
   INCLUDE_INCOMPLETE=1 ./run_all_rag_evaluations.sh
+
+  DISABLE_BERT_SCORE=1 ./run_all_rag_evaluations.sh
+
+  BERT_SCORE_DEVICE=cuda:0 BERT_SCORE_BATCH_SIZE=8 ./run_all_rag_evaluations.sh
 
 Notes:
   By default, incomplete run directories are skipped when rag/qa_predictions.jsonl
@@ -51,6 +62,21 @@ if [[ ! -d "${RUNS_ROOT}" ]]; then
 fi
 
 mkdir -p "${EVALS_ROOT}"
+
+bert_score_args=(
+  --bert-score-model "${BERT_SCORE_MODEL}"
+  --bert-score-lang "${BERT_SCORE_LANG}"
+  --bert-score-batch-size "${BERT_SCORE_BATCH_SIZE}"
+)
+if [[ -n "${BERT_SCORE_DEVICE//[[:space:]]/}" ]]; then
+  bert_score_args+=(--bert-score-device "${BERT_SCORE_DEVICE}")
+fi
+if [[ "${BERT_SCORE_RESCALE_WITH_BASELINE}" == "1" ]]; then
+  bert_score_args+=(--bert-score-rescale-with-baseline)
+fi
+if [[ "${DISABLE_BERT_SCORE}" == "1" ]]; then
+  bert_score_args=(--disable-bert-score)
+fi
 
 evaluated=0
 skipped=0
@@ -89,7 +115,8 @@ for dataset_entry in "${DATASETS[@]}"; do
       --dataset-name "${dataset}" \
       --split "${split}" \
       --ks 5 10 \
-      --generation-top-k "${GENERATION_TOP_K}"
+      --generation-top-k "${GENERATION_TOP_K}" \
+      "${bert_score_args[@]}"
 
     evaluated=$((evaluated + 1))
   done < <(find "${dataset_dir}" -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
