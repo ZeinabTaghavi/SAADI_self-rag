@@ -15,7 +15,7 @@ model:
   gpu_memory_utilization: 0.85
   max_context_tokens: 4096
   cuda_visible_devices: 4,5,6,7
-  download_dir: /home/iataghav/data/SAADI_self-rag/.cache
+  download_dir: /mnt/cache/taghavi
 generation:
   max_new_tokens: 256
   temperature: 0.0
