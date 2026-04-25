@@ -1,0 +1,82 @@
+{
+  "dataset_name": "loogle",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 44.87179487179487,
+      "median": 37.0,
+      "p95": 98.50000000000003
+    },
+    "context_tokens": {
+      "mean": 839.2051282051282,
+      "median": 1211.0,
+      "p95": 1214.0
+    },
+    "generation_latency_ms": {
+      "mean": 5943.41169243368,
+      "median": 5952.38424296258,
+      "p95": 11303.944074112223
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 184024.0,
+      "median": 184024.0,
+      "p95": 184024.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.00725982513708564,
+      "median": 0.005259993486106396,
+      "p95": 0.014968996401876211
+    },
+    "total_latency_ms": {
+      "mean": 6137.061947946234,
+      "median": 6127.53439694643,
+      "p95": 11548.414346354548
+    }
+  },
+  "generation_top_k": 10,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 39,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "exact_match": 0.0,
+    "rouge_l": 0.17027613234733005,
+    "token_f1": 0.1907121386163512
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "loogle_selfrag_reference",
+  "split": "test"
+}

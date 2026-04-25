@@ -1,0 +1,82 @@
+{
+  "dataset_name": "quality",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 53.21896162528217,
+      "median": 34.0,
+      "p95": 158.4999999999999
+    },
+    "context_tokens": {
+      "mean": 612.9164785553047,
+      "median": 990.0,
+      "p95": 1213.0
+    },
+    "generation_latency_ms": {
+      "mean": 2419.5167545217896,
+      "median": 2625.116112991236,
+      "p95": 4992.157235485502
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 195299.1828442438,
+      "median": 195961.0,
+      "p95": 195967.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.006534707360390078,
+      "median": 0.005820009391754866,
+      "p95": 0.014394003665074703
+    },
+    "total_latency_ms": {
+      "mean": 2622.234579161914,
+      "median": 2750.8325259550475,
+      "p95": 5204.873615672113
+    }
+  },
+  "generation_top_k": 10,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 443,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "exact_match": 0.0,
+    "rouge_l": 0.07077089591003216,
+    "token_f1": 0.08403969930392938
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "quality_selfrag_reference",
+  "split": "validation"
+}

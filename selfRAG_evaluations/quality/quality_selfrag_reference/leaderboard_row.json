@@ -1,0 +1,23 @@
+{
+  "context_tokens_mean": 612.9164785553047,
+  "dataset_name": "quality",
+  "exact_match": 0.0,
+  "generation_latency_mean_ms": 2419.5167545217896,
+  "generation_top_k": 10,
+  "hit_rate@10": 0.0,
+  "hit_rate@5": 0.0,
+  "method_name": "selfrag",
+  "mrr@10": 0.0,
+  "mrr@5": 0.0,
+  "ndcg@10": 0.0,
+  "ndcg@5": 0.0,
+  "peak_gpu_memory_mean_mb": 195299.1828442438,
+  "recall@10": 0.0,
+  "recall@5": 0.0,
+  "retrieval_latency_mean_ms": 0.006534707360390078,
+  "rouge_l": 0.07077089591003216,
+  "run_name": "quality_selfrag_reference",
+  "split": "validation",
+  "token_f1": 0.08403969930392938,
+  "total_latency_mean_ms": 2622.234579161914
+}

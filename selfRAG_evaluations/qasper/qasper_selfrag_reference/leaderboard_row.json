@@ -1,0 +1,23 @@
+{
+  "context_tokens_mean": 921.9506172839506,
+  "dataset_name": "qasper",
+  "exact_match": 0.0,
+  "generation_latency_mean_ms": 1911.5894342985373,
+  "generation_top_k": 10,
+  "hit_rate@10": 0.0,
+  "hit_rate@5": 0.0,
+  "method_name": "selfrag",
+  "mrr@10": 0.0,
+  "mrr@5": 0.0,
+  "ndcg@10": 0.0,
+  "ndcg@5": 0.0,
+  "peak_gpu_memory_mean_mb": 191105.14814814815,
+  "recall@10": 0.0,
+  "recall@5": 0.0,
+  "retrieval_latency_mean_ms": 0.005397186068427048,
+  "rouge_l": 0.10712007158918485,
+  "run_name": "qasper_selfrag_reference",
+  "split": "test",
+  "token_f1": 0.12047984706423928,
+  "total_latency_mean_ms": 2089.1171227544146
+}

@@ -1,0 +1,23 @@
+{
+  "context_tokens_mean": 620.2862745098039,
+  "dataset_name": "narrativeqa",
+  "exact_match": 0.0,
+  "generation_latency_mean_ms": 13873.595958146618,
+  "generation_top_k": 10,
+  "hit_rate@10": 0.0,
+  "hit_rate@5": 0.0,
+  "method_name": "selfrag",
+  "mrr@10": 0.0,
+  "mrr@5": 0.0,
+  "ndcg@10": 0.0,
+  "ndcg@5": 0.0,
+  "peak_gpu_memory_mean_mb": 200837.7816993464,
+  "recall@10": 0.0,
+  "recall@5": 0.0,
+  "retrieval_latency_mean_ms": 0.0066056813332526125,
+  "rouge_l": 0.05088083030105894,
+  "run_name": "narrativeqa_selfrag_reference",
+  "split": "test",
+  "token_f1": 0.056531041410070336,
+  "total_latency_mean_ms": 14067.224486394834
+}
