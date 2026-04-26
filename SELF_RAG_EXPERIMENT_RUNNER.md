@@ -24,7 +24,7 @@ python3 run_selfrag_experiment.py \
 Each run is written to:
 
 ```text
-selfrag_runs/<dataset_name>/<run_name>/
+selfrag_<top_k>_runs/<dataset_name>/<run_name>/
 ```
 
 with these artifacts:
@@ -40,6 +40,20 @@ rag/rag_run_traces.jsonl
 profiling/query_times.jsonl
 profiling/resource_usage.jsonl
 run_manifest.json
+```
+
+By default, `run_selfrag_multi_gpu.sh` uses `TOP_K=10` and writes to `selfrag_10_runs`.
+For top-5 runs, use `TOP_K=5`; the runner writes to `selfrag_5_runs` and sets
+`selfrag.ndocs`, `retrieval.retrieve_k`, and `evaluation.generation_top_k` consistently.
+
+Top-5 per-dataset launchers:
+
+```bash
+./run_selfrag_top5_loogle.sh
+./run_selfrag_top5_narrativeqa.sh
+./run_selfrag_top5_novelhopqa.sh
+./run_selfrag_top5_qasper.sh
+./run_selfrag_top5_quality.sh
 ```
 
 ## YAML mapping

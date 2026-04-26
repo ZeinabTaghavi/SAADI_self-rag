@@ -25,7 +25,7 @@ generation:
 selfrag:
   pipeline_type: short_form
   mode: adaptive_retrieval
-  ndocs: 5
+  ndocs: 10
   threshold: 0.2
   use_grounding: true
   use_utility: true
@@ -45,3 +45,6 @@ retrieval:
 profiling:
   enabled: true
   capture_resource_usage: true
+
+evaluation:
+  generation_top_k: 10

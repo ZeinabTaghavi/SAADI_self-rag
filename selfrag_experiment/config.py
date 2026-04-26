@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -55,6 +56,14 @@ def _string_or_none(value: Any) -> Optional[str]:
         return None
     text = str(value).strip()
     return text or None
+
+
+def _positive_int(value: Any, default: int) -> int:
+    try:
+        parsed = int(value)
+    except Exception:
+        return default
+    return parsed if parsed > 0 else default
 
 
 def _resolve_optional_path(value: Any, base_dir: Optional[Path]) -> Optional[str]:
@@ -234,10 +243,36 @@ def resolve_run_config(
         "capture_resource_usage": bool(first_value(config, ["profiling.capture_resource_usage"], default=True)),
     }
 
-    run_root = PROJECT_ROOT / "selfrag_runs" / dataset_name / run_name
+    artifact_top_k = _positive_int(
+        first_value(
+            config,
+            [
+                "evaluation.generation_top_k",
+                "evaluation.top_k",
+                "generation.top_k",
+                "selfrag.ndocs",
+                "retrieval.n_docs",
+                "retrieval.ndocs",
+                "retrieval.retrieve_k",
+            ],
+            default=selfrag["ndocs"],
+        ),
+        10,
+    )
+    runs_root_raw = (
+        _string_or_none(first_value(config, ["output.runs_root", "paths.runs_root", "experiment.runs_root"]))
+        or _string_or_none(os.environ.get("SELFRAG_RUNS_ROOT"))
+        or f"selfrag_{artifact_top_k}_runs"
+    )
+    runs_root = Path(runs_root_raw).expanduser()
+    if not runs_root.is_absolute():
+        runs_root = PROJECT_ROOT / runs_root
+    run_root = runs_root / dataset_name / run_name
     resolved = {
         "dataset_name": dataset_name,
         "run_name": run_name,
+        "artifact_top_k": artifact_top_k,
+        "runs_root": str(runs_root),
         "run_root": str(run_root),
         "dataset_loader": dataset_loader,
         "model": model,
@@ -263,7 +298,7 @@ def resolve_run_config(
     if dataset_loader["source"] is None and dataset_loader["qa_path"] is None and str(dataset_loader["source_type"]).lower() not in native_source_types:
         notes.append("No dataset source path was found in the YAML; the CLI must provide a dataset source override or the YAML must be updated.")
 
-    unmatched_top_level = sorted(set(config.keys()) - {"run_name", "name", "experiment", "dataset", "data", "qa", "corpus", "model", "generator", "generation", "decoding", "selfrag", "pipeline", "retrieval", "profiling", "evaluation", "task"})
+    unmatched_top_level = sorted(set(config.keys()) - {"run_name", "name", "experiment", "dataset", "data", "qa", "corpus", "model", "generator", "generation", "decoding", "selfrag", "pipeline", "retrieval", "profiling", "evaluation", "output", "paths", "task"})
     resolved["ignored_default_yaml_fields"] = unmatched_top_level
     if unmatched_top_level:
         notes.append(

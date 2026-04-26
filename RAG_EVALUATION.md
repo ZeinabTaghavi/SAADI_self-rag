@@ -4,10 +4,23 @@ Use `evaluate_rag_run.py` after a retrieval plus generation run has already fini
 
 ## One-command usage
 
-Evaluate every completed run under `selfrag_runs/<dataset>/` and write results under `selfRAG_evaluations/<dataset>/<run_name>/`:
+Evaluate every completed run under `selfrag_<top_k>_runs/<dataset>/` and write results under `selfrag_<top_k>_evaluations/<dataset>/<run_name>/`.
+By default this means top-10 runs and evaluations:
 
 ```bash
 ./run_all_rag_evaluations.sh
+```
+
+For top-5 runs and evaluations:
+
+```bash
+GENERATION_TOP_K=5 ./run_all_rag_evaluations.sh
+```
+
+or:
+
+```bash
+./run_all_rag_evaluations_top5.sh
 ```
 
 The all-runs wrapper covers `loogle`, `narrativeqa`, `novelhopqa`, `qasper`, and `quality`. It skips incomplete run folders unless you set:
@@ -19,16 +32,16 @@ INCLUDE_INCOMPLETE=1 ./run_all_rag_evaluations.sh
 To choose a different evaluation root:
 
 ```bash
-EVALS_ROOT=/path/to/selfRAG_evaluations ./run_all_rag_evaluations.sh
+EVALS_ROOT=/path/to/selfrag_10_evaluations ./run_all_rag_evaluations.sh
 ```
 
 Evaluate one run directly:
 
 ```bash
 ./run_rag_evaluation.sh \
-  --run-dir selfrag_runs/novelhopqa/novelhopqa_smoke \
-  --labels-file selfrag_runs/novelhopqa/novelhopqa_smoke/selection/qa_entries.json \
-  --output-dir selfrag_runs/novelhopqa/novelhopqa_smoke/evaluation \
+  --run-dir selfrag_10_runs/novelhopqa/novelhopqa_smoke \
+  --labels-file selfrag_10_runs/novelhopqa/novelhopqa_smoke/selection/qa_entries.json \
+  --output-dir selfrag_10_evaluations/novelhopqa/novelhopqa_smoke \
   --method-name selfrag \
   --dataset-name novelhopqa \
   --split test \
@@ -73,7 +86,7 @@ The output directory contains:
 - `leaderboard_row.json`
 - `evaluation_manifest.json`
 
-Generation metrics are computed from already-generated predictions. The manifest records `generation_top_k = 10`; the evaluator does not invent generation@5 when the run generated from top-10 context.
+Generation metrics are computed from already-generated predictions. The manifest records `generation_top_k`; the evaluator does not invent generation@5 when the run generated from top-10 context. Keep top-5 and top-10 runs in separate roots such as `selfrag_5_runs` and `selfrag_10_runs`.
 
 The RAG metric block reports:
 

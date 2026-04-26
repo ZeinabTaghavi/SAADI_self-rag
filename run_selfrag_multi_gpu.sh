@@ -11,13 +11,19 @@ ROOT_DIR="${ROOT_DIR:-$SCRIPT_DIR}"
 # Run all default datasets explicitly:
 #   GPU_IDS=4,5,6,7 DATASET_SEQUENCE=loogle,narrativeqa,qasper,quality,novelhopqa ./run_selfrag_multi_gpu.sh
 #
+# Run top-5 instead of the default top-10:
+#   GPU_IDS=4,5,6,7 TOP_K=5 ./run_selfrag_multi_gpu.sh
+#
 # Single-dataset smoke test:
-#   GPU_IDS=4,5,6,7 DATASET_NAME=loogle MAX_DOCS=1 QA_N=3 ./run_selfrag_multi_gpu.sh
+#   GPU_IDS=4,5,6,7 TOP_K=5 DATASET_NAME=loogle MAX_DOCS=1 QA_N=3 ./run_selfrag_multi_gpu.sh
 
 DATASET_NAME="${DATASET_NAME:-}"
 DATASET_SEQUENCE="${DATASET_SEQUENCE:-loogle,narrativeqa,qasper,quality,novelhopqa}"
 DEFAULT_YAML="${DEFAULT_YAML:-}"
 RUNNER="${RUNNER:-$SCRIPT_DIR/run_selfrag_experiment.py}"
+TOP_K="${TOP_K:-${NDOCS:-10}}"
+SELFRAG_RUNS_ROOT="${SELFRAG_RUNS_ROOT:-${ROOT_DIR}/selfrag_${TOP_K}_runs}"
+export SELFRAG_RUNS_ROOT
 
 GPU_IDS="${GPU_IDS:-4,5,6,7}"
 GPU_MEMORY_UTILIZATION="${GPU_MEMORY_UTILIZATION:-0.85}"
@@ -41,7 +47,7 @@ MAX_DOCS="${MAX_DOCS:-}"
 QA_N="${QA_N:-}"
 QA_SELECTION_METHOD="${QA_SELECTION_METHOD:-}"
 MAX_NEW_TOKENS="${MAX_NEW_TOKENS:-}"
-NDOCS="${NDOCS:-}"
+NDOCS="${NDOCS:-$TOP_K}"
 THRESHOLD="${THRESHOLD:-}"
 MODE="${MODE:-}"
 RESUME="${RESUME:-0}"
@@ -111,7 +117,9 @@ write_runtime_yaml() {
   QA_N="$QA_N" \
   QA_SELECTION_METHOD="$QA_SELECTION_METHOD" \
   MAX_NEW_TOKENS="$MAX_NEW_TOKENS" \
+  TOP_K="$TOP_K" \
   NDOCS="$NDOCS" \
+  SELFRAG_RUNS_ROOT="$SELFRAG_RUNS_ROOT" \
   THRESHOLD="$THRESHOLD" \
   MODE="$MODE" \
   python3 - <<'PY'
@@ -129,6 +137,9 @@ cfg.setdefault("dataset", {})
 cfg.setdefault("model", {})
 cfg.setdefault("generation", {})
 cfg.setdefault("selfrag", {})
+cfg.setdefault("retrieval", {})
+cfg.setdefault("evaluation", {})
+cfg.setdefault("output", {})
 
 if os.environ["RUN_NAME"]:
     cfg["run_name"] = os.environ["RUN_NAME"]
@@ -139,6 +150,8 @@ cfg["model"]["tensor_parallel_size"] = int(os.environ["TP_SIZE"])
 cfg["model"]["gpu_memory_utilization"] = float(os.environ["GPU_MEMORY_UTILIZATION"])
 cfg["model"]["cuda_visible_devices"] = os.environ["GPU_IDS"]
 cfg["model"]["download_dir"] = os.environ["DOWNLOAD_DIR"]
+cfg["evaluation"]["generation_top_k"] = int(os.environ["TOP_K"])
+cfg["output"]["runs_root"] = os.environ["SELFRAG_RUNS_ROOT"]
 
 if os.environ["MAX_DOCS"]:
     cfg["dataset"]["max_docs"] = int(os.environ["MAX_DOCS"])
@@ -152,8 +165,8 @@ if os.environ["MAX_NEW_TOKENS"]:
 if os.environ["NDOCS"]:
     ndocs = int(os.environ["NDOCS"])
     cfg["selfrag"]["ndocs"] = ndocs
-    cfg.setdefault("retrieval", {})
     cfg["retrieval"]["retrieve_k"] = ndocs
+    cfg["retrieval"]["n_docs"] = ndocs
 if os.environ["THRESHOLD"]:
     cfg["selfrag"]["threshold"] = float(os.environ["THRESHOLD"])
 if os.environ["MODE"]:
@@ -202,6 +215,8 @@ run_one_dataset() {
   echo "cwd=$SCRIPT_DIR"
   echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES"
   echo "tensor_parallel_size=$TP_SIZE"
+  echo "TOP_K=$TOP_K"
+  echo "SELFRAG_RUNS_ROOT=$SELFRAG_RUNS_ROOT"
   echo "DEFAULT_YAML=$source_yaml"
   echo "TMP_YAML=$tmp_yaml"
   echo "DOWNLOAD_DIR=$DOWNLOAD_DIR"

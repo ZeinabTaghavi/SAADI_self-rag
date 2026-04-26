@@ -2,10 +2,10 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RUNS_ROOT="${RUNS_ROOT:-${ROOT_DIR}/selfrag_runs}"
-EVALS_ROOT="${EVALS_ROOT:-${ROOT_DIR}/selfRAG_evaluations}"
 METHOD_NAME="${METHOD_NAME:-selfrag}"
-GENERATION_TOP_K="${GENERATION_TOP_K:-10}"
+GENERATION_TOP_K="${GENERATION_TOP_K:-${TOP_K:-10}}"
+RUNS_ROOT="${RUNS_ROOT:-${ROOT_DIR}/selfrag_${GENERATION_TOP_K}_runs}"
+EVALS_ROOT="${EVALS_ROOT:-${ROOT_DIR}/selfrag_${GENERATION_TOP_K}_evaluations}"
 INCLUDE_INCOMPLETE="${INCLUDE_INCOMPLETE:-0}"
 DISABLE_BERT_SCORE="${DISABLE_BERT_SCORE:-0}"
 ALLOW_MISSING_BERT_SCORE="${ALLOW_MISSING_BERT_SCORE:-0}"
@@ -25,19 +25,21 @@ DATASETS=(
 
 usage() {
   cat <<'EOF'
-Run compact RAG evaluation for every completed run under selfrag_runs/<dataset>/.
+Run compact RAG evaluation for every completed run under selfrag_<k>_runs/<dataset>/.
 
 Defaults:
-  RUNS_ROOT=./selfrag_runs
-  EVALS_ROOT=./selfRAG_evaluations
-  METHOD_NAME=selfrag
   GENERATION_TOP_K=10
+  RUNS_ROOT=./selfrag_10_runs
+  EVALS_ROOT=./selfrag_10_evaluations
+  METHOD_NAME=selfrag
   BERT_SCORE_MODEL=roberta-large
 
 Examples:
   ./run_all_rag_evaluations.sh
 
-  RUNS_ROOT=/path/to/selfrag_runs EVALS_ROOT=/path/to/selfRAG_evaluations METHOD_NAME=selfrag ./run_all_rag_evaluations.sh
+  GENERATION_TOP_K=5 ./run_all_rag_evaluations.sh
+
+  RUNS_ROOT=/path/to/selfrag_5_runs EVALS_ROOT=/path/to/selfrag_5_evaluations METHOD_NAME=selfrag GENERATION_TOP_K=5 ./run_all_rag_evaluations.sh
 
   INCLUDE_INCOMPLETE=1 ./run_all_rag_evaluations.sh
 
@@ -60,11 +62,9 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 if [[ ! -d "${RUNS_ROOT}" ]]; then
-  echo "No runs root found at ${RUNS_ROOT}" >&2
-  exit 1
+  echo "[info] creating empty runs root at ${RUNS_ROOT}"
 fi
-
-mkdir -p "${EVALS_ROOT}"
+mkdir -p "${RUNS_ROOT}" "${EVALS_ROOT}"
 
 bert_score_args=(
   --bert-score-model "${BERT_SCORE_MODEL}"
