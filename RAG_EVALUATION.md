@@ -90,6 +90,18 @@ BERTScore uses best-over-references selection per query, mirroring the existing 
 DISABLE_BERT_SCORE=1 ./run_all_rag_evaluations.sh
 ```
 
+If BERTScore is enabled, the evaluator now requires numeric BERTScore values instead of silently writing `null` when the dependency or model cannot be loaded. Install the dependency in the same Python environment used for evaluation:
+
+```bash
+python3 -m pip install 'bert-score>=0.3.13'
+```
+
+If you intentionally want the old soft-missing behavior, set:
+
+```bash
+ALLOW_MISSING_BERT_SCORE=1 ./run_all_rag_evaluations.sh
+```
+
 For GPU-controlled runs, set:
 
 ```bash

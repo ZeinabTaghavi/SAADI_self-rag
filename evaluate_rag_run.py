@@ -17,6 +17,7 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 METRIC_KEYS = ("recall", "mrr", "ndcg", "hit_rate")
 BERTSCORE_KEYS = ("bertscore_precision", "bertscore_recall", "bertscore_f1")
+NO_BERTSCORE_PAIRS_ERROR = "No non-empty prediction/reference pairs were available for BERTScore."
 EFFICIENCY_FIELDS = (
     "retrieval_latency_ms",
     "generation_latency_ms",
@@ -345,7 +346,7 @@ def compute_bert_scores(
             pair_references.append(ref)
 
     if not pair_predictions:
-        return empty, "No non-empty prediction/reference pairs were available for BERTScore."
+        return empty, NO_BERTSCORE_PAIRS_ERROR
 
     try:
         from bert_score import score as bert_score_score  # type: ignore
@@ -502,6 +503,17 @@ def package_versions() -> Dict[str, Optional[str]]:
     return versions
 
 
+def required_bert_score_error_message(error: str) -> str:
+    return (
+        f"{error}\n\n"
+        "BERTScore is enabled, so the evaluation cannot be reported with null BERTScore fields. "
+        "Install the dependency in the same Python environment used to run this script, for example:\n"
+        "  python3 -m pip install 'bert-score>=0.3.13'\n\n"
+        "For smoke tests, pass --disable-bert-score. To preserve the old soft-missing behavior, "
+        "pass --allow-missing-bert-score."
+    )
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate compact retrieval and generation metrics for an existing RAG run.")
     parser.add_argument("--run-dir", required=True, help="Existing run directory containing raw retrieval/generation outputs.")
@@ -525,6 +537,14 @@ def parse_args() -> argparse.Namespace:
         "--bert-score-rescale-with-baseline",
         action="store_true",
         help="Use bert-score baseline rescaling when available.",
+    )
+    parser.add_argument(
+        "--allow-missing-bert-score",
+        action="store_true",
+        help=(
+            "Continue and write null BERTScore fields if BERTScore import or computation fails. "
+            "By default, enabled BERTScore must produce numeric values."
+        ),
     )
     parser.add_argument(
         "--disable-doc-id-label-fallback",
@@ -769,6 +789,8 @@ def main() -> None:
         )
         if bert_error is not None:
             missing_reasons["bert_score"] = bert_error
+            if bert_error != NO_BERTSCORE_PAIRS_ERROR and not args.allow_missing_bert_score:
+                raise SystemExit(required_bert_score_error_message(bert_error))
         else:
             assumptions.append(
                 "BERTScore was computed with best-over-references selection per query "

@@ -8,6 +8,7 @@ METHOD_NAME="${METHOD_NAME:-selfrag}"
 GENERATION_TOP_K="${GENERATION_TOP_K:-10}"
 INCLUDE_INCOMPLETE="${INCLUDE_INCOMPLETE:-0}"
 DISABLE_BERT_SCORE="${DISABLE_BERT_SCORE:-0}"
+ALLOW_MISSING_BERT_SCORE="${ALLOW_MISSING_BERT_SCORE:-0}"
 BERT_SCORE_MODEL="${BERT_SCORE_MODEL:-roberta-large}"
 BERT_SCORE_LANG="${BERT_SCORE_LANG:-en}"
 BERT_SCORE_BATCH_SIZE="${BERT_SCORE_BATCH_SIZE:-16}"
@@ -41,6 +42,8 @@ Examples:
   INCLUDE_INCOMPLETE=1 ./run_all_rag_evaluations.sh
 
   DISABLE_BERT_SCORE=1 ./run_all_rag_evaluations.sh
+
+  ALLOW_MISSING_BERT_SCORE=1 ./run_all_rag_evaluations.sh
 
   BERT_SCORE_DEVICE=cuda:0 BERT_SCORE_BATCH_SIZE=8 ./run_all_rag_evaluations.sh
 
@@ -76,6 +79,15 @@ if [[ "${BERT_SCORE_RESCALE_WITH_BASELINE}" == "1" ]]; then
 fi
 if [[ "${DISABLE_BERT_SCORE}" == "1" ]]; then
   bert_score_args=(--disable-bert-score)
+elif [[ "${ALLOW_MISSING_BERT_SCORE}" == "1" ]]; then
+  bert_score_args+=(--allow-missing-bert-score)
+else
+  if ! python3 -c 'import bert_score' >/dev/null 2>&1; then
+    echo "BERTScore is enabled, but the active python3 cannot import bert_score." >&2
+    echo "Install it in this environment with: python3 -m pip install 'bert-score>=0.3.13'" >&2
+    echo "For smoke runs, set DISABLE_BERT_SCORE=1. To keep null BERTScore fields, set ALLOW_MISSING_BERT_SCORE=1." >&2
+    exit 1
+  fi
 fi
 
 evaluated=0
