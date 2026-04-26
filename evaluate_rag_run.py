@@ -287,6 +287,24 @@ def token_f1(prediction: Any, references: Sequence[Any]) -> Optional[float]:
     return best
 
 
+def extract_short_answer(prediction: str) -> str:
+    text = prediction.strip()
+    match = re.search(r"\banswer\s+is\s+(.+)", text, flags=re.IGNORECASE | re.DOTALL)
+    if match:
+        text = match.group(1).strip()
+    if "." in text:
+        text = text.split(".", 1)[0]
+    return text.strip()
+
+
+def answer_containment(prediction: Any, references: Sequence[Any]) -> Optional[float]:
+    refs = [normalize_answer(ref) for ref in references if normalize_answer(ref)]
+    if not refs:
+        return None
+    pred = normalize_answer(prediction)
+    return 1.0 if any(ref in pred for ref in refs) else 0.0
+
+
 def lcs_len(a: Sequence[str], b: Sequence[str]) -> int:
     if not a or not b:
         return 0
@@ -725,7 +743,18 @@ def main() -> None:
         em = exact_match(prediction_text, reference_answers) if prediction_text is not None else None
         f1 = token_f1(prediction_text, reference_answers) if prediction_text is not None else None
         rouge = rouge_l(prediction_text, reference_answers) if prediction_text is not None else None
-        for key, value in (("exact_match", em), ("token_f1", f1), ("rouge_l", rouge)):
+        extracted_answer = extract_short_answer(str(prediction_text)) if prediction_text is not None else None
+        em_extracted = exact_match(extracted_answer, reference_answers) if extracted_answer is not None else None
+        f1_extracted = token_f1(extracted_answer, reference_answers) if extracted_answer is not None else None
+        containment = answer_containment(prediction_text, reference_answers) if prediction_text is not None else None
+        for key, value in (
+            ("exact_match", em),
+            ("token_f1", f1),
+            ("rouge_l", rouge),
+            ("exact_match_extracted", em_extracted),
+            ("token_f1_extracted", f1_extracted),
+            ("answer_containment", containment),
+        ):
             if value is not None:
                 generation_scores[key].append(value)
 
@@ -757,6 +786,9 @@ def main() -> None:
             "exact_match": em,
             "token_f1": f1,
             "rouge_l": rouge,
+            "exact_match_extracted": em_extracted,
+            "token_f1_extracted": f1_extracted,
+            "answer_containment": containment,
             "bertscore_precision": None,
             "bertscore_recall": None,
             "bertscore_f1": None,
@@ -828,6 +860,9 @@ def main() -> None:
         "exact_match": statistics.fmean(generation_scores["exact_match"]) if generation_scores["exact_match"] else None,
         "token_f1": statistics.fmean(generation_scores["token_f1"]) if generation_scores["token_f1"] else None,
         "rouge_l": statistics.fmean(generation_scores["rouge_l"]) if generation_scores["rouge_l"] else None,
+        "exact_match_extracted": statistics.fmean(generation_scores["exact_match_extracted"]) if generation_scores["exact_match_extracted"] else None,
+        "token_f1_extracted": statistics.fmean(generation_scores["token_f1_extracted"]) if generation_scores["token_f1_extracted"] else None,
+        "answer_containment": statistics.fmean(generation_scores["answer_containment"]) if generation_scores["answer_containment"] else None,
         "bertscore_precision": statistics.fmean(generation_scores["bertscore_precision"]) if generation_scores["bertscore_precision"] else None,
         "bertscore_recall": statistics.fmean(generation_scores["bertscore_recall"]) if generation_scores["bertscore_recall"] else None,
         "bertscore_f1": statistics.fmean(generation_scores["bertscore_f1"]) if generation_scores["bertscore_f1"] else None,
@@ -858,6 +893,9 @@ def main() -> None:
         "exact_match": rag_metrics["exact_match"],
         "token_f1": rag_metrics["token_f1"],
         "rouge_l": rag_metrics["rouge_l"],
+        "exact_match_extracted": rag_metrics["exact_match_extracted"],
+        "token_f1_extracted": rag_metrics["token_f1_extracted"],
+        "answer_containment": rag_metrics["answer_containment"],
         "bertscore_precision": rag_metrics["bertscore_precision"],
         "bertscore_recall": rag_metrics["bertscore_recall"],
         "bertscore_f1": rag_metrics["bertscore_f1"],
