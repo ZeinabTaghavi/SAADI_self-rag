@@ -1,10 +1,12 @@
 {
-  "bertscore_f1": 0.8255410234912548,
-  "bertscore_precision": 0.8166681814817042,
-  "bertscore_recall": 0.8358927997888304,
+  "answer_containment": 0.0,
+  "bertscore_f1": 0.8255410202967575,
+  "bertscore_precision": 0.8166681827283373,
+  "bertscore_recall": 0.8358927983863681,
   "context_tokens_mean": 620.2862745098039,
   "dataset_name": "narrativeqa",
   "exact_match": 0.0,
+  "exact_match_extracted": 0.0,
   "generation_latency_mean_ms": 13873.595958146618,
   "generation_top_k": 10,
   "hit_rate@10": 0.0,
@@ -22,5 +24,6 @@
   "run_name": "narrativeqa_selfrag_reference",
   "split": "test",
   "token_f1": 0.056531041410070336,
+  "token_f1_extracted": 0.058135134715640975,
   "total_latency_mean_ms": 14067.224486394834
 }

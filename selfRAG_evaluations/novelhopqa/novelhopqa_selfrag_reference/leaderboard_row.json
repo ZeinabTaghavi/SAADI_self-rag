@@ -1,10 +1,12 @@
 {
-  "bertscore_f1": 0.8260216038883912,
-  "bertscore_precision": 0.8171248676388594,
-  "bertscore_recall": 0.8358772666486975,
+  "answer_containment": 0.01445966514459665,
+  "bertscore_f1": 0.8260216027089994,
+  "bertscore_precision": 0.8171248669130798,
+  "bertscore_recall": 0.8358772664672527,
   "context_tokens_mean": 685.4345509893456,
   "dataset_name": "novelhopqa",
   "exact_match": 0.0015220700152207,
+  "exact_match_extracted": 0.0015220700152207,
   "generation_latency_mean_ms": 58792.46902197037,
   "generation_top_k": 10,
   "hit_rate@10": 0.0,
@@ -22,5 +24,6 @@
   "run_name": "novelhopqa_selfrag_reference",
   "split": "test",
   "token_f1": 0.05819660601108181,
+  "token_f1_extracted": 0.06193957919112814,
   "total_latency_mean_ms": 59008.27631674252
 }

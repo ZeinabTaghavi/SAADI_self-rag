@@ -41,12 +41,15 @@
   "n_queries": 81,
   "primary_relevance": "gold",
   "rag_metrics": {
-    "bertscore_f1": 0.8354680221757771,
-    "bertscore_precision": 0.830423238100829,
-    "bertscore_recall": 0.8411814364386193,
+    "answer_containment": 0.13580246913580246,
+    "bertscore_f1": 0.8354680236474967,
+    "bertscore_precision": 0.8304232344215299,
+    "bertscore_recall": 0.8411814334951802,
     "exact_match": 0.0,
+    "exact_match_extracted": 0.0,
     "rouge_l": 0.10712007158918485,
-    "token_f1": 0.12047984706423928
+    "token_f1": 0.12047984706423928,
+    "token_f1_extracted": 0.12382782257956919
   },
   "retrieval_metrics": {
     "hit_rate@10": 0.0,

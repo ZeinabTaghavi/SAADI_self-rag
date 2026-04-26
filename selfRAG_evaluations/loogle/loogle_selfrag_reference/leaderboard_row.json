@@ -1,10 +1,12 @@
 {
-  "bertscore_f1": 0.866549232067206,
-  "bertscore_precision": 0.8550345760125381,
-  "bertscore_recall": 0.8791538018446702,
+  "answer_containment": 0.0,
+  "bertscore_f1": 0.8665492290105575,
+  "bertscore_precision": 0.8550345775408622,
+  "bertscore_recall": 0.8791537972596976,
   "context_tokens_mean": 839.2051282051282,
   "dataset_name": "loogle",
   "exact_match": 0.0,
+  "exact_match_extracted": 0.0,
   "generation_latency_mean_ms": 5943.41169243368,
   "generation_top_k": 10,
   "hit_rate@10": 0.0,
@@ -22,5 +24,6 @@
   "run_name": "loogle_selfrag_reference",
   "split": "test",
   "token_f1": 0.1907121386163512,
+  "token_f1_extracted": 0.19182018554569952,
   "total_latency_mean_ms": 6137.061947946234
 }

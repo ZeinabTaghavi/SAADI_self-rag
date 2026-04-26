@@ -18,7 +18,7 @@
     "rescale_with_baseline": false
   },
   "command_used": "/home/iataghav/data/SAADI_self-rag/evaluate_rag_run.py --run-dir /home/iataghav/data/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference --output-dir /home/iataghav/data/SAADI_self-rag/selfRAG_evaluations/novelhopqa/novelhopqa_selfrag_reference --method-name selfrag --dataset-name novelhopqa --split test --ks 5 10 --generation-top-k 10 --bert-score-model roberta-large --bert-score-lang en --bert-score-batch-size 16",
-  "created_at_utc": "2026-04-26T06:58:13.277260+00:00",
+  "created_at_utc": "2026-04-26T08:09:27.693910+00:00",
   "generation_evaluated_from_top_k": 10,
   "input_files_used": {
     "labels_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference/selection/qa_entries.json",
