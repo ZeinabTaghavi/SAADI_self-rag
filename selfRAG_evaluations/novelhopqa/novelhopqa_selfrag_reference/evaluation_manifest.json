@@ -5,19 +5,20 @@
     "Retrieved ids are deduplicated while preserving first occurrence before metric computation.",
     "No explicit retrieval output file was found; retrieved ids were inferred from traces/prediction rows when possible.",
     "If candidate_traces are used, their order may reflect SELF-RAG candidate scoring rather than raw retriever order.",
+    "BERTScore was computed with best-over-references selection per query using model=roberta-large, lang=en, rescale_with_baseline=False.",
     "Explicit gold/silver relevance ids were absent for at least one query, so doc_id was used as a gold relevance id."
   ],
   "bert_score_config": {
-    "batch_size": 8,
+    "batch_size": 16,
     "best_over_references": true,
-    "device": "cuda:0",
+    "device": null,
     "enabled": true,
     "lang": "en",
     "model": "roberta-large",
     "rescale_with_baseline": false
   },
-  "command_used": "/home/iataghav/data/SAADI_self-rag/evaluate_rag_run.py --run-dir /home/iataghav/data/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference --output-dir /home/iataghav/data/SAADI_self-rag/selfRAG_evaluations/novelhopqa/novelhopqa_selfrag_reference --method-name selfrag --dataset-name novelhopqa --split test --ks 5 10 --generation-top-k 10 --bert-score-model roberta-large --bert-score-lang en --bert-score-batch-size 8 --bert-score-device cuda:0",
-  "created_at_utc": "2026-04-26T06:49:43.769668+00:00",
+  "command_used": "/home/iataghav/data/SAADI_self-rag/evaluate_rag_run.py --run-dir /home/iataghav/data/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference --output-dir /home/iataghav/data/SAADI_self-rag/selfRAG_evaluations/novelhopqa/novelhopqa_selfrag_reference --method-name selfrag --dataset-name novelhopqa --split test --ks 5 10 --generation-top-k 10 --bert-score-model roberta-large --bert-score-lang en --bert-score-batch-size 16",
+  "created_at_utc": "2026-04-26T06:58:13.277260+00:00",
   "generation_evaluated_from_top_k": 10,
   "input_files_used": {
     "labels_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference/selection/qa_entries.json",
@@ -26,9 +27,7 @@
     "run_dir": "/mnt/data/zeinab/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference",
     "traces_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_runs/novelhopqa/novelhopqa_selfrag_reference/rag/rag_run_traces.jsonl"
   },
-  "missing_metrics_and_reasons": {
-    "bert_score": "BERTScore could not be imported: No module named 'bert_score'"
-  },
+  "missing_metrics_and_reasons": {},
   "output_files_written": {
     "evaluation_manifest": "/mnt/data/zeinab/SAADI_self-rag/selfRAG_evaluations/novelhopqa/novelhopqa_selfrag_reference/evaluation_manifest.json",
     "leaderboard_row": "/mnt/data/zeinab/SAADI_self-rag/selfRAG_evaluations/novelhopqa/novelhopqa_selfrag_reference/leaderboard_row.json",
@@ -36,7 +35,7 @@
     "metrics_summary": "/mnt/data/zeinab/SAADI_self-rag/selfRAG_evaluations/novelhopqa/novelhopqa_selfrag_reference/metrics_summary.json"
   },
   "package_versions": {
-    "bert-score": null,
+    "bert-score": "0.3.13",
     "datasets": "2.19.1",
     "numpy": "2.2.6",
     "python": "3.12.3",

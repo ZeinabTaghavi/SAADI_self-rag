@@ -1,7 +1,7 @@
 {
-  "bertscore_f1": null,
-  "bertscore_precision": null,
-  "bertscore_recall": null,
+  "bertscore_f1": 0.866549232067206,
+  "bertscore_precision": 0.8550345760125381,
+  "bertscore_recall": 0.8791538018446702,
   "context_tokens_mean": 839.2051282051282,
   "dataset_name": "loogle",
   "exact_match": 0.0,

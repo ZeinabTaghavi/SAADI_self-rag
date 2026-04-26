@@ -41,9 +41,9 @@
   "n_queries": 765,
   "primary_relevance": "gold",
   "rag_metrics": {
-    "bertscore_f1": null,
-    "bertscore_precision": null,
-    "bertscore_recall": null,
+    "bertscore_f1": 0.8255410234912548,
+    "bertscore_precision": 0.8166681814817042,
+    "bertscore_recall": 0.8358927997888304,
     "exact_match": 0.0,
     "rouge_l": 0.05088083030105894,
     "token_f1": 0.056531041410070336
