@@ -1,0 +1,101 @@
+{
+  "created_at_utc": "2026-04-26T16:34:32.392245+00:00",
+  "dataset_name": "quality",
+  "run_name": "quality_selfrag_reference",
+  "command": "/home/iataghav/data/SAADI_self-rag/run_selfrag_experiment.py --dataset-name quality --default-yaml /home/iataghav/data/SAADI_self-rag/.tmp/quality_selfrag_runtime.yaml",
+  "git_commit": "2396939a6349b5e21cd5ee5b99bdbfa2f39b83bd",
+  "python_version": "3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]",
+  "package_versions": {
+    "torch": "2.10.0",
+    "transformers": "4.57.6",
+    "vllm": "0.19.0",
+    "datasets": "2.19.1",
+    "PyYAML": "6.0.2"
+  },
+  "hardware_summary": {
+    "platform": "Linux-6.17.0-22-generic-x86_64-with-glibc2.39",
+    "python_implementation": "CPython",
+    "cuda_visible_devices": "4,5,6,7",
+    "resource_snapshot": {
+      "captured_at_utc": "2026-04-26T16:34:32.476852+00:00",
+      "phase": "hardware_summary",
+      "query_id": null,
+      "doc_id": null,
+      "cpu_memory_mb": 1153.41796875,
+      "gpu_memory_mb": 361327.0,
+      "gpu_peak_memory_mb": 361327.0,
+      "gpu_devices": [
+        {
+          "gpu_index": "0",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 47853.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "1",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 46366.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "2",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 46366.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "3",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 46366.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "4",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 43594.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "5",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 43594.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "6",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 43594.0,
+          "gpu_total_memory_mb": 49140.0
+        },
+        {
+          "gpu_index": "7",
+          "gpu_name": "NVIDIA RTX A6000",
+          "gpu_memory_mb": 43594.0,
+          "gpu_total_memory_mb": 49140.0
+        }
+      ]
+    }
+  },
+  "selected_documents_count": 25,
+  "selected_questions_count": 443,
+  "artifact_paths": {
+    "manifest": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/run_manifest.json",
+    "default_experiment_yaml": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/config/default_experiment.yaml",
+    "selfrag_run_yaml": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/config/selfrag_run.yaml",
+    "selected_doc_ids": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/selection/selected_doc_ids.json",
+    "qa_entries": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/selection/qa_entries.json",
+    "documents_jsonl": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/corpus/documents.jsonl",
+    "qa_predictions": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/rag/qa_predictions.jsonl",
+    "rag_traces": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/rag/rag_run_traces.jsonl",
+    "query_times": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/profiling/query_times.jsonl",
+    "resource_usage": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/profiling/resource_usage.jsonl"
+  },
+  "config_paths": {
+    "default_experiment_yaml": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/config/default_experiment.yaml",
+    "selfrag_run_yaml": "/home/iataghav/data/SAADI_self-rag/selfrag_5_runs/quality/quality_selfrag_reference/config/selfrag_run.yaml"
+  },
+  "notes_about_assumptions_or_ignored_yaml_fields": [
+    "No explicit contexts_field was provided; the runner will auto-detect from ctxs/top_contexts/docs when present.",
+    "Applied max_documents=25 from the YAML-style sample settings."
+  ]
+}

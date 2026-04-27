@@ -1,0 +1,47 @@
+run_name: narrativeqa_selfrag_reference
+dataset:
+  name: narrativeqa
+  source_type: narrativeqa
+  split: test
+  config_name: default
+  qa_n: all
+  qa_selection_method: first
+  max_docs: 25
+  task: qa
+model:
+  name: selfrag/selfrag_llama2_7b
+  tensor_parallel_size: 4
+  dtype: bfloat16
+  gpu_memory_utilization: 0.85
+  max_context_tokens: 4096
+  cuda_visible_devices: 4,5,6,7
+  download_dir: /mnt/cache/taghavi
+generation:
+  max_new_tokens: 320
+  temperature: 0.0
+  top_p: 1.0
+selfrag:
+  pipeline_type: short_form
+  mode: adaptive_retrieval
+  ndocs: 5
+  threshold: 0.2
+  use_grounding: true
+  use_utility: true
+  use_seqscore: true
+  w_rel: 1.0
+  w_sup: 1.0
+  w_use: 0.5
+  scoring_strategy: marker
+  passage_chunk_tokens: 1400
+  passage_chunk_overlap_tokens: 250
+retrieval:
+  backend: provided_contexts
+  retrieve_k: 5
+  n_docs: 5
+profiling:
+  enabled: true
+  capture_resource_usage: true
+evaluation:
+  generation_top_k: 5
+output:
+  runs_root: /home/iataghav/data/SAADI_self-rag/selfrag_5_runs

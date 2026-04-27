@@ -36,7 +36,12 @@ selfrag:
   passage_chunk_overlap_tokens: 200
 retrieval:
   backend: provided_contexts
-  retrieve_k: 10
+  retrieve_k: 5
+  n_docs: 5
 profiling:
   enabled: true
   capture_resource_usage: true
+evaluation:
+  generation_top_k: 5
+output:
+  runs_root: /home/iataghav/data/SAADI_self-rag/selfrag_5_runs
