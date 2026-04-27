@@ -1,0 +1,88 @@
+{
+  "dataset_name": "novelhopqa",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 65.05218012866334,
+      "median": 41.0,
+      "p95": 209.0
+    },
+    "context_tokens": {
+      "mean": 692.2280200142959,
+      "median": 0.0,
+      "p95": 1414.0
+    },
+    "generation_latency_ms": {
+      "mean": 59840.01344454512,
+      "median": 2016.3597440114245,
+      "p95": 191364.27702066716
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 185127.275,
+      "median": 173228.0,
+      "p95": 360429.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.0074900263351913516,
+      "median": 0.005659996531903744,
+      "p95": 0.014766008825972671
+    },
+    "total_latency_ms": {
+      "mean": 60057.5654060608,
+      "median": 2148.902140033897,
+      "p95": 191627.75680993212
+    }
+  },
+  "generation_top_k": 5,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 1841,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "answer_containment": 0.01501072194424589,
+    "bertscore_f1": 0.8263729147778144,
+    "bertscore_precision": 0.8173615862166055,
+    "bertscore_recall": 0.836332484344826,
+    "exact_match": 0.0014295925661186562,
+    "exact_match_extracted": 0.0014295925661186562,
+    "rouge_l": 0.05124057064527514,
+    "token_f1": 0.0596887365691842,
+    "token_f1_extracted": 0.06353700842816279
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "novelhopqa_selfrag_reference",
+  "split": "test"
+}

@@ -1,0 +1,88 @@
+{
+  "dataset_name": "loogle",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 44.87179487179487,
+      "median": 37.0,
+      "p95": 98.50000000000003
+    },
+    "context_tokens": {
+      "mean": 839.2051282051282,
+      "median": 1211.0,
+      "p95": 1214.0
+    },
+    "generation_latency_ms": {
+      "mean": 6010.929588462787,
+      "median": 5972.855123982299,
+      "p95": 11398.551244696137
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 298208.0,
+      "median": 354304.0,
+      "p95": 358688.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.006736483042820906,
+      "median": 0.004699977580457926,
+      "p95": 0.014323031064122922
+    },
+    "total_latency_ms": {
+      "mean": 6206.625731969371,
+      "median": 6182.804593001492,
+      "p95": 11647.43719662656
+    }
+  },
+  "generation_top_k": 5,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 39,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "answer_containment": 0.0,
+    "bertscore_f1": 0.8665492305388818,
+    "bertscore_precision": 0.8550345775408622,
+    "bertscore_recall": 0.8791537987880218,
+    "exact_match": 0.0,
+    "exact_match_extracted": 0.0,
+    "rouge_l": 0.17027613234733005,
+    "token_f1": 0.1907121386163512,
+    "token_f1_extracted": 0.19182018554569952
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "loogle_selfrag_reference",
+  "split": "test"
+}

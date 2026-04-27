@@ -1,0 +1,61 @@
+{
+  "assumptions": [
+    "Evaluated existing predictions only; no retrieval or generation was rerun.",
+    "Generation metrics correspond to generation_top_k = 5.",
+    "Retrieved ids are deduplicated while preserving first occurrence before metric computation.",
+    "No explicit retrieval output file was found; retrieved ids were inferred from traces/prediction rows when possible.",
+    "If candidate_traces are used, their order may reflect SELF-RAG candidate scoring rather than raw retriever order.",
+    "BERTScore was computed with best-over-references selection per query using model=roberta-large, lang=en, rescale_with_baseline=False.",
+    "Explicit gold/silver relevance ids were absent for at least one query, so doc_id was used as a gold relevance id."
+  ],
+  "bert_score_config": {
+    "batch_size": 16,
+    "best_over_references": true,
+    "device": null,
+    "enabled": true,
+    "lang": "en",
+    "model": "roberta-large",
+    "rescale_with_baseline": false
+  },
+  "command_used": "/home/iataghav/data/SAADI_self-rag/evaluate_rag_run.py --run-dir /home/iataghav/data/SAADI_self-rag/selfrag_5_runs/narrativeqa/narrativeqa_selfrag_reference --output-dir /home/iataghav/data/SAADI_self-rag/selfrag_5_evaluations/narrativeqa/narrativeqa_selfrag_reference --method-name selfrag --dataset-name narrativeqa --split test --ks 5 10 --generation-top-k 5 --bert-score-model roberta-large --bert-score-lang en --bert-score-batch-size 16",
+  "created_at_utc": "2026-04-27T19:04:44.076078+00:00",
+  "generation_evaluated_from_top_k": 5,
+  "input_files_used": {
+    "labels_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_runs/narrativeqa/narrativeqa_selfrag_reference/selection/qa_entries.json",
+    "predictions_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_runs/narrativeqa/narrativeqa_selfrag_reference/rag/qa_predictions.jsonl",
+    "resource_usage_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_runs/narrativeqa/narrativeqa_selfrag_reference/profiling/resource_usage.jsonl",
+    "run_dir": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_runs/narrativeqa/narrativeqa_selfrag_reference",
+    "traces_file": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_runs/narrativeqa/narrativeqa_selfrag_reference/rag/rag_run_traces.jsonl"
+  },
+  "missing_metrics_and_reasons": {},
+  "output_files_written": {
+    "evaluation_manifest": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_evaluations/narrativeqa/narrativeqa_selfrag_reference/evaluation_manifest.json",
+    "leaderboard_row": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_evaluations/narrativeqa/narrativeqa_selfrag_reference/leaderboard_row.json",
+    "metrics_per_query": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_evaluations/narrativeqa/narrativeqa_selfrag_reference/metrics_per_query.jsonl",
+    "metrics_summary": "/mnt/data/zeinab/SAADI_self-rag/selfrag_5_evaluations/narrativeqa/narrativeqa_selfrag_reference/metrics_summary.json"
+  },
+  "package_versions": {
+    "bert-score": "0.3.13",
+    "datasets": "2.19.1",
+    "numpy": "2.2.6",
+    "python": "3.12.3",
+    "rouge-score": null,
+    "torch": "2.10.0",
+    "transformers": "4.57.6",
+    "vllm": "0.19.0"
+  },
+  "primary_relevance_choice": "gold",
+  "relevance_source_used": {
+    "doc_id_fallback_used": true,
+    "eligible_query_counts": {
+      "gold": 765,
+      "union": 765
+    },
+    "explicit_relevance_fields_seen": false,
+    "primary_relevance": "gold"
+  },
+  "retrieval_source_fields": {
+    "missing": 427,
+    "passages_used": 338
+  }
+}

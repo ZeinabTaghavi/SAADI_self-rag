@@ -1,0 +1,88 @@
+{
+  "dataset_name": "qasper",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 34.641975308641975,
+      "median": 29.0,
+      "p95": 72.0
+    },
+    "context_tokens": {
+      "mean": 921.9506172839506,
+      "median": 1419.0,
+      "p95": 1436.0
+    },
+    "generation_latency_ms": {
+      "mean": 1933.927418550557,
+      "median": 1798.7036849954166,
+      "p95": 4587.861703999806
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 358688.0,
+      "median": 358688.0,
+      "p95": 358688.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.0044116491658820044,
+      "median": 0.004059984348714352,
+      "p95": 0.007049995474517345
+    },
+    "total_latency_ms": {
+      "mean": 2112.8569958475705,
+      "median": 1877.6509260060266,
+      "p95": 4666.762520035263
+    }
+  },
+  "generation_top_k": 5,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 81,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "answer_containment": 0.13580246913580246,
+    "bertscore_f1": 0.8354680236474967,
+    "bertscore_precision": 0.8304232344215299,
+    "bertscore_recall": 0.8411814334951802,
+    "exact_match": 0.0,
+    "exact_match_extracted": 0.0,
+    "rouge_l": 0.10712007158918485,
+    "token_f1": 0.12047984706423928,
+    "token_f1_extracted": 0.12382782257956919
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "qasper_selfrag_reference",
+  "split": "test"
+}

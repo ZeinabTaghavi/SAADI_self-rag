@@ -1,0 +1,88 @@
+{
+  "dataset_name": "narrativeqa",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 55.538562091503266,
+      "median": 29.0,
+      "p95": 300.79999999999995
+    },
+    "context_tokens": {
+      "mean": 620.2862745098039,
+      "median": 0.0,
+      "p95": 1405.0
+    },
+    "generation_latency_ms": {
+      "mean": 13922.795735731619,
+      "median": 603.1145220040344,
+      "p95": 58347.95058078595
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 356520.8758169935,
+      "median": 360397.0,
+      "p95": 360471.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.00851257206579926,
+      "median": 0.005469948519021273,
+      "p95": 0.0339588150382039
+    },
+    "total_latency_ms": {
+      "mean": 14116.417944589111,
+      "median": 840.122680994682,
+      "p95": 58561.28511774583
+    }
+  },
+  "generation_top_k": 5,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 765,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "answer_containment": 0.0,
+    "bertscore_f1": 0.8254664388357424,
+    "bertscore_precision": 0.8165945225291782,
+    "bertscore_recall": 0.8358224939676672,
+    "exact_match": 0.0,
+    "exact_match_extracted": 0.0,
+    "rouge_l": 0.05058215374288426,
+    "token_f1": 0.056203600674868424,
+    "token_f1_extracted": 0.05793891949340826
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "narrativeqa_selfrag_reference",
+  "split": "test"
+}

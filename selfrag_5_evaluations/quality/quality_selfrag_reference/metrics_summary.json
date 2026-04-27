@@ -1,0 +1,88 @@
+{
+  "dataset_name": "quality",
+  "efficiency": {
+    "answer_tokens": {
+      "mean": 53.230248306997744,
+      "median": 34.0,
+      "p95": 158.4999999999999
+    },
+    "context_tokens": {
+      "mean": 612.9187358916479,
+      "median": 990.0,
+      "p95": 1213.0
+    },
+    "generation_latency_ms": {
+      "mean": 2422.2903778071204,
+      "median": 2623.41285898583,
+      "p95": 5016.712136735441
+    },
+    "peak_gpu_memory_mb": {
+      "mean": 340412.848758465,
+      "median": 361327.0,
+      "p95": 361469.0
+    },
+    "retrieval_latency_ms": {
+      "mean": 0.005546679486926334,
+      "median": 0.004849978722631931,
+      "p95": 0.012114876881241757
+    },
+    "total_latency_ms": {
+      "mean": 2625.2198123619323,
+      "median": 2757.0763849653304,
+      "p95": 5227.963235537754
+    }
+  },
+  "generation_top_k": 5,
+  "k_values": [
+    5,
+    10
+  ],
+  "method_name": "selfrag",
+  "n_queries": 443,
+  "primary_relevance": "gold",
+  "rag_metrics": {
+    "answer_containment": 0.004514672686230248,
+    "bertscore_f1": 0.8430352972538692,
+    "bertscore_precision": 0.8313042567222975,
+    "bertscore_recall": 0.8555494478270916,
+    "exact_match": 0.0,
+    "exact_match_extracted": 0.0,
+    "rouge_l": 0.07093810600952218,
+    "token_f1": 0.08420690940341939,
+    "token_f1_extracted": 0.09831929865112495
+  },
+  "retrieval_metrics": {
+    "hit_rate@10": 0.0,
+    "hit_rate@5": 0.0,
+    "mrr@10": 0.0,
+    "mrr@5": 0.0,
+    "ndcg@10": 0.0,
+    "ndcg@5": 0.0,
+    "recall@10": 0.0,
+    "recall@5": 0.0
+  },
+  "retrieval_metrics_by_relevance": {
+    "gold": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": 0.0,
+      "mrr@5": 0.0,
+      "ndcg@10": 0.0,
+      "ndcg@5": 0.0,
+      "recall@10": 0.0,
+      "recall@5": 0.0
+    },
+    "union": {
+      "hit_rate@10": 0.0,
+      "hit_rate@5": 0.0,
+      "mrr@10": null,
+      "mrr@5": null,
+      "ndcg@10": null,
+      "ndcg@5": null,
+      "recall@10": null,
+      "recall@5": null
+    }
+  },
+  "run_name": "quality_selfrag_reference",
+  "split": "validation"
+}
